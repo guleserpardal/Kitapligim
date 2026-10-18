@@ -4,7 +4,8 @@ import org.json.*;
 import java.util.*;
 
 public final class NotionCodec {
-    public static final List<String> PURCHASE_COLUMNS = List.of("Fiyat","Mağaza","Satın Alma Linki");
+    /** Columns added after the first release; a table without them still syncs everything else. */
+    public static final List<String> OPTIONAL_COLUMNS = List.of("Fiyat","Mağaza","Satın Alma Linki","Altı Çizilenler");
     private static JSONObject value(String k, Object v) throws JSONException { return new JSONObject().put(k, v); }
     private static JSONArray rich(String s) throws JSONException {
         JSONArray r=new JSONArray();
@@ -21,6 +22,28 @@ public final class NotionCodec {
     private static String select(JSONObject p,String k) throws JSONException {JSONObject x=p.optJSONObject(k);if(x==null || x.optJSONObject("select")==null)return "";return x.getJSONObject("select").optString("name");}
     private static String url(JSONObject p,String k) throws JSONException {JSONObject x=p.optJSONObject(k);return x==null||x.isNull("url")?"":x.optString("url");}
     private static String date(JSONObject p,String k) throws JSONException {JSONObject x=p.optJSONObject(k);if(x==null||x.optJSONObject("date")==null)return "";return x.getJSONObject("date").optString("start").split("T")[0];}
+    /** Readable in Notion: one passage per block, blank line between, e.g. “…” then "— s. 124" and "Not: …". */
+    public static String highlightText(JSONArray list) throws JSONException {
+        StringBuilder s=new StringBuilder();if(list==null)return "";
+        for(int i=0;i<list.length();i++){JSONObject h=list.getJSONObject(i);if(s.length()>0)s.append("\n\n");s.append('“').append(h.optString("text")).append('”');if(h.optInt("page")>0)s.append("\n— s. ").append(h.optInt("page"));if(!h.optString("note").isEmpty())s.append("\nNot: ").append(h.optString("note"));}
+        return s.toString();
+    }
+    /** Lenient on purpose: a passage typed in Notion without quotes or page is still one passage. */
+    public static JSONArray parseHighlights(String raw) throws JSONException {
+        JSONArray out=new JSONArray();int n=0;
+        for(String block:raw.replace("\r","").split("\n[ \t]*\n")){
+            List<String> lines=new ArrayList<>(Arrays.asList(block.trim().split("\n")));String note="";int page=0;
+            for(int i=lines.size()-1;i>0;i--){String l=lines.get(i).trim();
+                if(l.startsWith("Not:")&&note.isEmpty()&&page==0){note=l.substring(4).trim();lines.remove(i);}
+                else if(l.matches("—\\s*s\\.\\s*\\d{1,6}")&&page==0){page=Integer.parseInt(l.replaceAll("\\D",""));lines.remove(i);}
+                else break;}
+            String text=String.join("\n",lines).trim();
+            if(text.startsWith("“")&&text.endsWith("”")&&text.length()>=2)text=text.substring(1,text.length()-1).trim();
+            if(text.isEmpty())continue;
+            out.put(new JSONObject().put("id","n"+(n++)).put("text",text).put("page",page).put("note",note).put("createdAt",""));
+        }
+        return out;
+    }
     public static JSONObject toProperties(JSONObject b) throws JSONException {
         JSONObject p=new JSONObject();
         p.put("Kitap",value("title",rich(b.getString("title"))));
@@ -35,6 +58,7 @@ public final class NotionCodec {
         p.put("Fiyat",value("rich_text",rich(b.optString("price"))));
         p.put("Mağaza",value("rich_text",rich(b.optString("store"))));
         p.put("Satın Alma Linki",value("url",b.optString("buyUrl").isEmpty()?JSONObject.NULL:b.getString("buyUrl")));
+        p.put("Altı Çizilenler",value("rich_text",rich(highlightText(b.optJSONArray("highlights")))));
         return p;
     }
     public static JSONObject fromPage(JSONObject page) throws JSONException {
@@ -50,6 +74,7 @@ public final class NotionCodec {
         if(p.has("Fiyat"))b.put("price",text(p,"Fiyat","rich_text"));
         if(p.has("Mağaza"))b.put("store",text(p,"Mağaza","rich_text"));
         if(p.has("Satın Alma Linki"))b.put("buyUrl",url(p,"Satın Alma Linki"));
+        if(p.has("Altı Çizilenler"))b.put("highlights",parseHighlights(text(p,"Altı Çizilenler","rich_text")));
         boolean deleted=page.optBoolean("archived")||page.optBoolean("is_archived")||page.optBoolean("in_trash")||(p.optJSONObject("Silindi")!=null && p.getJSONObject("Silindi").optBoolean("checkbox"));
         b.put("deleted",deleted).put("remotePageId",page.getString("id")).put("remoteEditedAt",page.getString("last_edited_time")).put("updatedAt",page.getString("last_edited_time")).put("syncStatus","synced");
         JSONArray photos=p.optJSONObject("Kapak Fotoğrafı")==null?null:p.getJSONObject("Kapak Fotoğrafı").optJSONArray("files");

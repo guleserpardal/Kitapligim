@@ -27,6 +27,7 @@ import java.util.concurrent.*;
 public class MainActivity extends Activity {
     private WebView web;
     private String photoRequest;
+    private boolean photoTextOnly;
     private Uri cameraUri;
     private boolean ready;
     private ScheduledFuture<?> pendingSync;
@@ -108,12 +109,12 @@ public class MainActivity extends Activity {
         return out;
     }
     private void selectPhoto(String id,String payload){
-        try{if(photoRequest!=null)throw new Exception("Bir fotoğraf işlemi zaten açık.");photoRequest=id;String source=new JSONObject(payload).optString("source");
+        try{if(photoRequest!=null)throw new Exception("Bir fotoğraf işlemi zaten açık.");photoRequest=id;JSONObject photoOptions=new JSONObject(payload);String source=photoOptions.optString("source");photoTextOnly=photoOptions.optBoolean("textOnly");
             if(source.equals("camera")){File dir=new File(getCacheDir(),"camera");dir.mkdirs();File photo=File.createTempFile("capture-",".jpg",dir);cameraUri=FileProvider.getUriForFile(this,getPackageName()+".files",photo);Intent intent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE).putExtra(MediaStore.EXTRA_OUTPUT,cameraUri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);startActivityForResult(intent,41);}
             else {Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("image/*").addCategory(Intent.CATEGORY_OPENABLE);startActivityForResult(intent,42);}
         }catch(Exception e){photoRequest=null;reply(id,null,"Fotoğraf açılamadı. Kamera veya galeriyi tekrar dene.");}
     }
-    @Override protected void onActivityResult(int req,int result,Intent data){super.onActivityResult(req,result,data);if(req!=41&&req!=42)return;String id=photoRequest;photoRequest=null;if(id==null)return;if(result!=RESULT_OK){reply(id,new JSONObject(),null);return;}Uri uri=req==41?cameraUri:data==null?null:data.getData();if(uri==null){reply(id,null,"Fotoğraf alınamadı.");return;}
+    @Override protected void onActivityResult(int req,int result,Intent data){super.onActivityResult(req,result,data);if(req!=41&&req!=42)return;String id=photoRequest;photoRequest=null;if(id==null)return;boolean textOnly=photoTextOnly;photoTextOnly=false;if(result!=RESULT_OK){reply(id,new JSONObject(),null);return;}Uri uri=req==41?cameraUri:data==null?null:data.getData();if(uri==null){reply(id,null,"Fotoğraf alınamadı.");return;}
         AppRuntime.EXEC.execute(()->{
             TextRecognizer text=TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);BarcodeScanner barcode=BarcodeScanning.getClient(new BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_EAN_13,Barcode.FORMAT_EAN_8,Barcode.FORMAT_CODE_128).build());
             try{
@@ -124,7 +125,10 @@ public class MainActivity extends Activity {
                 File f=new File(AppRuntime.covers(this),"cover-"+UUID.randomUUID()+".jpg");try(FileOutputStream out=new FileOutputStream(f)){bitmap.compress(Bitmap.CompressFormat.JPEG,86,out);}
                 InputImage image=InputImage.fromBitmap(bitmap,0);Text recognized=Tasks.await(text.process(image),30,TimeUnit.SECONDS);List<Barcode> codes=Tasks.await(barcode.process(image),15,TimeUnit.SECONDS);String isbn="";for(Barcode code:codes){String raw=code.getRawValue();if(raw!=null&&(raw.startsWith("978")||raw.startsWith("979"))&&raw.matches("\\d{13}")){isbn=raw;break;}}
                 List<Text.Line> lines=new ArrayList<>();for(Text.TextBlock block:recognized.getTextBlocks())lines.addAll(block.getLines());lines.sort((a,b)->Integer.compare(b.getBoundingBox()==null?0:b.getBoundingBox().height(),a.getBoundingBox()==null?0:a.getBoundingBox().height()));JSONArray suggestions=new JSONArray();for(Text.Line line:lines){String s=line.getText().trim();if(s.length()>1&&suggestions.length()<14)suggestions.put(s);}
-                bitmap.recycle();reply(id,new JSONObject().put("localCover",f.getName()).put("photoKey",f.getName()).put("text",recognized.getText()).put("suggestions",suggestions).put("isbn",isbn),null);
+                bitmap.recycle();
+                // A page photographed for an underlined passage is only read, never kept.
+                if(textOnly){f.delete();JSONArray lines2=new JSONArray();for(Text.TextBlock block:recognized.getTextBlocks())for(Text.Line line:block.getLines())lines2.put(line.getText().trim());reply(id,new JSONObject().put("text",recognized.getText()).put("lines",lines2),null);return;}
+                reply(id,new JSONObject().put("localCover",f.getName()).put("photoKey",f.getName()).put("text",recognized.getText()).put("suggestions",suggestions).put("isbn",isbn),null);
             }catch(Exception e){reply(id,null,"Fotoğraftaki yazı okunamadı. Daha net bir fotoğraf dene veya kitabı elle ekle.");}finally{text.close();barcode.close();}
         });
     }

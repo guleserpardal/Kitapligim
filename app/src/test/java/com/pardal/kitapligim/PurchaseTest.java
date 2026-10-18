@@ -32,7 +32,7 @@ public class PurchaseTest {
  @Test public void emptyNotionLinkStaysEmpty() throws Exception {JSONObject back=NotionCodec.fromPage(page(NotionCodec.toProperties(book())));assertEquals("",back.getString("buyUrl"));assertEquals("",back.getString("cover"));}
  @Test public void tableWithoutPurchaseColumnsKeepsPhoneValues() throws Exception {
   JSONObject local=Book.normalize(book().put("price","231,00 TL").put("store","D&R").put("buyUrl","https://www.dr.com.tr/x"));
-  JSONObject props=NotionCodec.toProperties(local);for(String c:NotionCodec.PURCHASE_COLUMNS)props.remove(c);
+  JSONObject props=NotionCodec.toProperties(local);for(String c:NotionCodec.OPTIONAL_COLUMNS)props.remove(c);
   JSONObject remote=NotionCodec.fromPage(page(props));assertFalse(remote.has("buyUrl"));assertTrue(Book.same(local,remote));
   JSONObject merged=SyncMerge.merge(local,remote);assertEquals("https://www.dr.com.tr/x",merged.getString("buyUrl"));assertEquals("231,00 TL",merged.getString("price"));
  }
