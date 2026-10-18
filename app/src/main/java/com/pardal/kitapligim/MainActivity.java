@@ -30,6 +30,7 @@ public class MainActivity extends Activity {
     private Uri cameraUri;
     private boolean ready;
     private ScheduledFuture<?> pendingSync;
+    private StoreScraper scraper;
     private static final String ORIGIN="https://appassets.androidplatform.net";
     @Override public void onCreate(Bundle state){
         super.onCreate(state);
@@ -67,6 +68,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void request(String id,String action,String payload){
             if(action.equals("photo")){runOnUiThread(()->selectPhoto(id,payload));return;}
             // Price lookups use their own threads so slow shops never delay saving or syncing.
+            if(action.equals("shopPrices")){runOnUiThread(()->{try{if(scraper==null)scraper=new StoreScraper(MainActivity.this);JSONObject p=new JSONObject(payload);String isbn=p.optString("isbn").replaceAll("[^0-9Xx]","");String q=isbn.length()==10||isbn.length()==13?isbn:(p.optString("title")+" "+p.optString("author")).trim();if(q.isEmpty()){reply(id,new JSONArray(),null);return;}scraper.prices(q,offers->reply(id,offers,null));}catch(Exception e){reply(id,null,"Mağaza fiyatları alınamadı.");}});return;}
             if(action.equals("offers")){OFFERS.execute(()->{try{reply(id,offers(new JSONObject(payload).getJSONArray("books")),null);}catch(Exception e){reply(id,null,"Fiyat bilgisi alınamadı.");}});return;}
             AppRuntime.EXEC.execute(()->{try{JSONObject p=new JSONObject(payload);Object result;
                 switch(action){
