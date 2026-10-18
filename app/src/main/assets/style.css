@@ -331,3 +331,6 @@ body.typing .chat-bar{bottom:0}
 .shop-chip strong{font-weight:650;color:var(--green-dark);margin-left:2px}
 .shop-chip.best{border-color:var(--green);background:#eef0dd}
 .chip-dots{color:#a8977d}
+.remove-book{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:6px 0 4px;padding:13px;border-radius:14px;color:#a14a2e;font-size:14px;font-weight:600;border:1px solid #ecd3c4;background:#fbf0e8}
+.remove-book svg{width:18px;height:18px}
+.detail-top .icon-btn{color:var(--brown)}
