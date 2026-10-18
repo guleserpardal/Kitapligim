@@ -8,7 +8,7 @@ Bu paket 1.0.1 kaynak kodunu içerir. GitHub'a yükleme adımları `GITHUB.md`, 
 
 ## 1.2.0 güncellemesi
 
-- **Fiyat ve satın alma linki:** Arama sonuçlarında kitabın güncel fiyatı görünür (Olimpos ve D&R; ISBN ile eşleşen baskı). Kitabı rafına eklerken fiyat, mağaza ve satın alma linki de kaydedilir; kitap detayındaki **Satın al** düğmesi bu sayfayı açar. Fiyat bulunamazsa D&R araması kaydedilir. Eski kitaplar için detaydaki **Fiyatını ve satın alma linkini bul** düğmesi kullanılabilir. Fiyat eklendiği günkü fiyattır.
+- **Fiyat ve satın alma linki:** Arama sonuçlarında kitabın güncel fiyatı görünür (Olimpos ve D&R; ISBN ile eşleşen baskı). Kitabı rafına eklerken fiyat, mağaza ve satın alma linki de kaydedilir; kitap detayındaki **Satın al** düğmesi bu sayfayı açar. Fiyat bulunamazsa D&R araması kaydedilir. Eski kitaplar için detaydaki **Fiyatını ve satın alma linkini bul** düğmesi kullanılabilir. Fiyat eklendiği günkü fiyattır. Fiyatın altındaki **İdefix, Trendyol, Hepsiburada** düğmeleri kitabı o mağazada (ISBN ya da ad-yazar ile) arar; bu siteler otomatik fiyat okumayı engellediği için fiyatları mağazanın kendi sayfasında görünür.
 - **Yeni kitap ekleme ekranı:** kapaklı başlık alanı, profil ve raf seçimi için dokunmatik kartlar, yıldızla puanlama; ISBN, kapak, fiyat ve link "Diğer bilgiler" altında.
 - Notion'daki Aile Kitaplığımız tablosuna **Fiyat**, **Mağaza** ve **Satın Alma Linki** sütunları eklendi. Bu sütunlar olmayan bir tabloda eşitleme eskisi gibi çalışır, telefondaki fiyat silinmez.
 - `versionCode 4`: aynı imzayla Güncelle'ye dokunarak yüklenir, kayıtların korunur.
