@@ -1,0 +1,6 @@
+{
+  "name": "kitapligim-ui-checks",
+  "private": true,
+  "scripts": { "test:ui": "node tests/home-ui.cjs" },
+  "devDependencies": { "playwright": "1.62.1" }
+}

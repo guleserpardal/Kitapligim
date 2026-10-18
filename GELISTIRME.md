@@ -1,12 +1,12 @@
 # Geliştirme ve yeniden derleme
 
-Bu kaynak paketi Android Studio'da açılabilen bağımsız bir Gradle projesidir. Harici bir Git deposuna bağlı değildir.
+Bu kaynak paketi Android Studio'da açılabilen bağımsız bir Gradle projesidir. Kaynak deposu: https://github.com/guleserpardal/Kitapligim.
 
 - Java 17 JDK, Android SDK Platform 35, Build Tools 35.0.0.
 - Gradle Wrapper 8.9, Android Gradle Plugin 8.7.3.
 - En düşük Android sürümü: 11 / API 30. Hedef API 35.
 - ABI'ler: arm64-v8a (teslim edilen telefon APK'sı), x86_64 (emülatör).
-- Uygulama kimliği: `com.pardal.kitapligim`, sürüm: `1.0.1` / kod `2`.
+- Uygulama kimliği: `com.pardal.kitapligim`, sürüm: `1.3.0` / kod `5`.
 - Yerel HTML/CSS/JavaScript ekranları Android WebViewAssetLoader ile güvenli yerel HTTPS kökeninden sunulur. Ağ araması, OCR, kamera, disk, Android Keystore ve Notion bağlantısı Java katmanındadır. Web sitesi veya kurulum bağlantısı gerektirmez.
 - Kitaplar `AtomicFile` ile uygulamanın özel alanına yazılır. Tüm yerel yazmalar ve eşitleme tek iş parçacıklı yürütücüden geçer.
 - Notion REST sürümü: 2025-09-03; tek aile veri kaynağı: `a77420e6-f540-49a2-84c0-45c3bffa711a`.
@@ -51,3 +51,19 @@ WindowInsets artık WebView yerine dış FrameLayout üzerinde uygulanır; CSS s
 - Sohbet geçmişi telefonda (WebView yerel depolaması, profil başına son 40 mesaj) tutulur. Sunucuya yalnızca son 12 mesaj, profil adı ve kitaplık listesi (ad, yazar, raf, puan) gider.
 - Sunucu testleri: `cd server && npm test`. İstemci testi: `AssistantTest`.
 - Arayüz yeniden tasarlandı: dört sekme (Kitaplığım, Ara, Hedefler, Ayarlar), raf süzgeçleri ana ekranda, tam sayfa Kitap detayı. Profil avatarları şimdilik baş harflidir.
+
+## 1.3.0 ana sayfa ve arayüz kontrolü
+
+Dört raf aynı ana sayfada ayrı bölümlerle gösterilir. `Tümünü gör`, rafın tam listesini ve kitap/yazar aramasını açar. Ana sayfa her rafın en çok altı kapağını ve en son güncellenen okunmakta olan kitabı gösterir; diğer kayıtlar tam raf listesinden erişilir. Filtre düğmeleri veya raf açılır listesi kullanılmaz.
+
+`library-corner.svg` yerel dekoratif görseldir; kişisel veri veya ağ isteği içermez. Ekleme menüsü beş mevcut akışa yönlendirir, Escape/Android geri ile kapanır. Notion ve kitap veri modeli değiştirilmemiştir.
+
+Arayüz akışlarını yerelde kontrol etmek için Node 18+ ve Python 3 gerekir:
+
+```sh
+npm ci
+npx playwright install chromium
+npm run test:ui
+```
+
+Test yerel bir HTTP sunucusu açıp kapatır; örnek verileri yalnız tarayıcının test bağlamında tutar, gerçek Notion/kamera servisini çağırmaz. Dört rafı, listelerin tamamını, aramayı, profil ayrımını, kaydedilen notu, ara verilen kitabın ilerlemesini, beş ekleme seçeneğini, geri tuşunu ve dar ekranları kontrol eder. `test-results/` görselleri Git dışında tutulur. Farklı bir Chromium ikilisi için `PLAYWRIGHT_CHROMIUM_EXECUTABLE` ortam değişkeni kullanılabilir.

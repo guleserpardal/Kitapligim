@@ -4,7 +4,15 @@ Güleser, İlker, Elis ve Lila için krem ve zeytin tonlarında kişisel Android
 
 ## GitHub ve geliştirme
 
-Bu paket 1.0.1 kaynak kodunu içerir. GitHub'a yükleme adımları `GITHUB.md`, derleme ayrıntıları `GELISTIRME.md` dosyasındadır. İmza anahtarları ve parolalar pakete dahil edilmemiştir. Java 17 ve Android SDK 35 ile Android Studio'da açılabilir; imza anahtarı olmadan debug APK derlenebilir.
+Bu depo Kitaplığım uygulamasının kaynak kodunu içerir. GitHub'a yükleme adımları `GITHUB.md`, derleme ayrıntıları `GELISTIRME.md` dosyasındadır. İmza anahtarları ve parolalar pakete dahil edilmemiştir. Java 17 ve Android SDK 35 ile Android Studio'da açılabilir; imza anahtarı olmadan debug APK derlenebilir.
+
+## 1.3.0 — Kendi kitap köşen
+
+- Ana sayfa sıcak krem tonlarında, ahşap raf çizgileri ve kapaklarla yeniden düzenlendi. Okumaya devam et, Sıradaki kitaplar, Bitirdiğim kitaplar ve **Ara verdiklerim** aynı sayfada yer alır.
+- Her bölümde **Tümünü gör** ile o kişinin rafındaki bütün kitaplar açılır; raf içinde kitap/yazar araması yapılabilir. Ana sayfa önizlemesinde gösterilmeyen kitaplar raf listesinden erişilebilir.
+- Sağ alttaki **+** açılır menüsü: Kitap ara, Danışmana sor, Kapaktan bul, ISBN tara, Elle ekle. Telefonun geri tuşu ve Escape menüyü kapatır.
+- Hedef ve ilerleme, seçili kişinin gerçek verilerinden gelir; örnek kitap eklenmez. Sayfa güncelleme, alıntılar ve Notion eşitlemesi mevcut kayıtlarla çalışmaya devam eder.
+- `versionName 1.3.0`, `versionCode 5`. Önceki kişisel imzayla derlendiğinde uygulamayı kaldırmadan güncellenir.
 
 ## 1.2.0 güncellemesi
 
@@ -29,7 +37,7 @@ Bu paket 1.0.1 kaynak kodunu içerir. GitHub'a yükleme adımları `GITHUB.md`, 
 
 ## Telefona kurulum
 
-1. `Kitapligim-1.0.1.apk` dosyasını telefona indirip aç.
+1. Güncel `Kitapligim-1.3.0.apk` dosyasını telefona indirip aç.
 2. Android isterse dosyayı açtığın uygulama için “Bu kaynaktan yüklemeye izin ver” seçeneğini aç; ardından Yükle'ye dokun.
 3. Kitaplığım'ı aç ve üstteki dört profilden birini seç.
 
