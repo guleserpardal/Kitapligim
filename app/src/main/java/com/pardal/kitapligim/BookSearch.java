@@ -53,9 +53,45 @@ public final class BookSearch {
         for(Element card:document.select(".Product[data-prd-barcode]")){
             Element link=card.selectFirst(".Product-content .name a"),image=card.selectFirst("img.prd_img");if(link==null)continue;
             String cover=image==null?"":image.hasAttr("data-src")?image.attr("abs:data-src"):image.attr("abs:src");
-            books.put(new JSONObject().put("title",link.text()).put("author",card.select(".writer").text()).put("isbn",card.attr("data-prd-barcode")).put("cover",cover).put("totalPages",0).put("source","Olimpos · Türkçe katalog").put("sourceUrl",link.absUrl("href")));
+            JSONObject book=new JSONObject().put("title",link.text()).put("author",card.select(".writer").text()).put("isbn",card.attr("data-prd-barcode")).put("cover",cover).put("totalPages",0).put("source","Olimpos · Türkçe katalog").put("sourceUrl",link.absUrl("href"));
+            Element price=card.selectFirst(".price_sale[data-price]");if(price==null)price=card.selectFirst(".price[data-price]");
+            String amount=price==null?"":lira(price.attr("data-price"));
+            if(!amount.isEmpty()&&link.absUrl("href").startsWith("https://"))book.put("price",amount).put("store","Olimpos").put("buyUrl",link.absUrl("href"));
+            books.put(book);
         }
         return books;
+    }
+    /** "231.00" → "231,00 TL"; anything unparseable yields an empty price rather than a wrong one. */
+    public static String lira(String amount){try{double v=Double.parseDouble(amount.trim());return v>0?String.format(Locale.forLanguageTag("tr"),"%,.2f TL",v):"";}catch(Exception e){return "";}}
+    /** Current price and purchase link for one edition. D&R is looked up by ISBN; without a match the link opens a D&R search. */
+    public JSONObject offer(String isbn,String title,String author) throws Exception {
+        String clean=isbn.replaceAll("[^0-9Xx]","");
+        if(clean.length()==10||clean.length()==13){
+            try{JSONObject found=dr(fetch.get("https://www.dr.com.tr/search?q="+clean),clean);if(found!=null)return found;}catch(Exception ignored){}
+        }
+        String q=(clean.isEmpty()?(title+" "+author):clean).trim();
+        if(q.isEmpty())return new JSONObject();
+        return new JSONObject().put("price","").put("store","D&R araması").put("buyUrl","https://www.dr.com.tr/search?q="+URLEncoder.encode(q,"UTF-8")).put("searchOnly",true);
+    }
+    public static JSONObject dr(String html,String isbn) throws JSONException {
+        Document document=Jsoup.parse(html,"https://www.dr.com.tr/");
+        Element canonical=document.selectFirst("link[rel=canonical]");String url=canonical==null?"":canonical.absUrl("href");
+        for(Element script:document.select("script[type=application/ld+json]")){
+            // D&R leaves raw line breaks inside JSON strings; as whitespace they are harmless.
+            Object parsed;try{parsed=new JSONTokener(script.data().replaceAll("\\p{Cntrl}"," ").trim()).nextValue();}catch(Exception e){continue;}
+            JSONArray list=parsed instanceof JSONArray?(JSONArray)parsed:new JSONArray().put(parsed);
+            for(int i=0;i<list.length();i++){
+                JSONObject item=list.optJSONObject(i);if(item==null||!item.optString("@type").contains("Product"))continue;
+                if(!isbn.equals(item.optString("gtin13"))&&!isbn.equals(item.optString("isbn")))continue;
+                Object offers=item.opt("offers");JSONObject offer=offers instanceof JSONArray?((JSONArray)offers).optJSONObject(0):offers instanceof JSONObject?(JSONObject)offers:null;
+                if(offer==null)continue;
+                String price=lira(offer.optString("price")),link=url.isEmpty()?offer.optString("url"):url;
+                if(price.isEmpty()||!link.startsWith("https://"))continue;
+                boolean inStock=!offer.optString("availability").contains("OutOfStock");
+                return new JSONObject().put("price",price).put("store",inStock?"D&R":"D&R · stokta yok").put("buyUrl",link);
+            }
+        }
+        return null;
     }
     private static String join(JSONArray a) throws JSONException {if(a==null)return "";List<String> values=new ArrayList<>();for(int i=0;i<a.length();i++)values.add(a.getString(i));return String.join(", ",values);}
     public static JSONArray google(JSONObject response) throws JSONException {
@@ -63,7 +99,10 @@ public final class BookSearch {
         for(int i=0;i<items.length();i++){
             JSONObject v=items.getJSONObject(i).getJSONObject("volumeInfo"),b=new JSONObject().put("title",v.optString("title")).put("author",join(v.optJSONArray("authors"))).put("totalPages",v.optInt("pageCount")).put("isbn","").put("cover","").put("source","Google Books");
             JSONArray ids=v.optJSONArray("industryIdentifiers");if(ids!=null)for(int j=0;j<ids.length();j++){JSONObject x=ids.getJSONObject(j);if("ISBN_13".equals(x.optString("type"))||b.getString("isbn").isEmpty())b.put("isbn",x.optString("identifier"));}
-            JSONObject images=v.optJSONObject("imageLinks");if(images!=null)b.put("cover",images.optString("thumbnail").replace("http://","https://"));results.put(b);
+            JSONObject images=v.optJSONObject("imageLinks");if(images!=null)b.put("cover",images.optString("thumbnail").replace("http://","https://"));
+            JSONObject sale=items.getJSONObject(i).optJSONObject("saleInfo"),retail=sale==null?null:sale.optJSONObject("retailPrice");
+            if(retail!=null&&"FOR_SALE".equals(sale.optString("saleability"))&&sale.optString("buyLink").startsWith("https://")){String code=retail.optString("currencyCode");String amount=lira(retail.optString("amount"));if(!amount.isEmpty())b.put("price","TRY".equals(code)?amount:amount.replace(" TL"," "+code)).put("store","Google Play · e-kitap").put("buyUrl",sale.getString("buyLink"));}
+            results.put(b);
         }
         return results;
     }

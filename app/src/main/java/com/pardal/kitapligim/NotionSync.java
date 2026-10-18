@@ -15,6 +15,8 @@ public final class NotionSync {
     }
     public void run() throws Exception {
         if(token.isEmpty())return;
+        // Purchase columns were added later; families whose table lacks them keep syncing everything else.
+        JSONObject columns=call("GET","/data_sources/"+BookStore.DATA_SOURCE,null).getJSONObject("properties");
         Map<String,JSONObject> remote=new LinkedHashMap<>();String cursor="";int count=0;
         do {JSONObject q=new JSONObject().put("page_size",100);if(!cursor.isEmpty())q.put("start_cursor",cursor);JSONObject result=call("POST","/data_sources/"+BookStore.DATA_SOURCE+"/query",q);JSONArray pages=result.getJSONArray("results");for(int i=0;i<pages.length();i++){JSONObject page=pages.getJSONObject(i);JSONObject b=NotionCodec.fromPage(page);String id=b.getString("id");if(remote.containsKey(id))throw new Exception("Notion'da aynı Uygulama ID ile iki kayıt var. Yinelenen satırı kontrol et.");remote.put(id,b);}cursor=result.optBoolean("has_more")?result.optString("next_cursor",""):"";if(++count>100)throw new Exception("Kitaplık çok büyük; eşitleme tamamlanmadı.");}while(!cursor.isEmpty());
         JSONArray local=store.state().getJSONArray("books");Set<String> seenPages=new HashSet<>();for(JSONObject b:remote.values())seenPages.add(b.optString("remotePageId"));
@@ -35,7 +37,7 @@ public final class NotionSync {
             if(b.optBoolean("deleted") && b.optString("remotePageId").isEmpty()){b.put("syncStatus","synced");store.put(b);continue;}
             String pid=b.optString("remotePageId");
             if(!pid.isEmpty()) {JSONObject latest=NotionCodec.fromPage(call("GET","/pages/"+pid,null));JSONObject merged=SyncMerge.merge(b,latest);if("conflict".equals(merged.optString("syncStatus"))){store.put(merged);continue;}}
-            JSONObject props=NotionCodec.toProperties(b);JSONObject photo=null;
+            JSONObject props=NotionCodec.toProperties(b);for(String name:NotionCodec.PURCHASE_COLUMNS)if(!columns.has(name))props.remove(name);JSONObject photo=null;
             if(!b.optString("photoKey").isEmpty()&&!b.getString("photoKey").equals(b.optString("uploadedPhotoKey"))){File f=new File(covers,b.getString("photoKey"));if(!f.getCanonicalPath().startsWith(covers.getCanonicalPath()+File.separator)||!f.isFile())throw new Exception("Kitabın kapak fotoğrafı bulunamadı.");JSONObject up=call("POST","/file_uploads",new JSONObject().put("mode","single_part").put("filename",f.getName()).put("content_type","image/jpeg"));Http.uploadPhoto(token,up,f);photo=new JSONObject().put("type","file_upload").put("file_upload",new JSONObject().put("id",up.getString("id")));props.put("Kapak Fotoğrafı",new JSONObject().put("files",new JSONArray().put(Book.copy(photo).put("name",b.getString("photoKey")))));}
             JSONObject body=new JSONObject().put("properties",props);if(!pid.isEmpty())body.put("in_trash",false);if(photo!=null)body.put("cover",photo);else if(!b.optString("cover").isEmpty())body.put("cover",new JSONObject().put("type","external").put("external",new JSONObject().put("url",b.getString("cover"))));
             JSONObject response;if(pid.isEmpty()){body.put("parent",new JSONObject().put("type","data_source_id").put("data_source_id",BookStore.DATA_SOURCE));response=call("POST","/pages",body);}else response=call("PATCH","/pages/"+pid,body);

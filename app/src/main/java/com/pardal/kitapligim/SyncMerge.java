@@ -18,6 +18,8 @@ public final class SyncMerge {
         JSONObject result=Book.copy(remote);
         result.put("id", local.optString("id", remote.optString("id")));
         if (!local.optString("localCover").isEmpty()) result.put("localCover", local.optString("localCover"));
+        // A Notion table without the purchase columns must not erase the price saved on the phone.
+        for (String key : Book.PURCHASE) if (!result.has(key) && local.has(key)) result.put(key, local.get(key));
         result.put("syncStatus", "synced"); result.remove("conflictRemote");
         return result;
     }

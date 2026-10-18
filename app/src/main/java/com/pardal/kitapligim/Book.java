@@ -9,6 +9,8 @@ public final class Book {
     public static final List<String> PROFILES = List.of("Güleser", "İlker", "Elis", "Lila");
     public static final List<String> STATUSES = List.of("want", "reading", "done", "paused");
     public static final String[] FIELDS = {"profile","title","author","isbn","cover","totalPages","currentPage","status","rating","notes","startedAt","finishedAt","photoKey","deleted"};
+    /** Purchase details are optional: older saves and a Notion table without these columns simply lack the keys. */
+    public static final String[] PURCHASE = {"price","buyUrl","store"};
     public static JSONObject copy(JSONObject b) throws JSONException { return new JSONObject(b.toString()); }
     public static String now() { return Instant.now().toString(); }
     public static JSONObject normalize(JSONObject input) throws JSONException {
@@ -28,10 +30,18 @@ public final class Book {
         b.put("title", title).put("author", b.optString("author").trim()).put("totalPages", total).put("currentPage", current).put("rating", rating);
         for (String key : List.of("author", "isbn", "cover", "notes", "startedAt", "finishedAt", "photoKey")) b.put(key, b.optString(key));
         b.put("deleted", b.optBoolean("deleted"));
+        if (b.has("price")) { String price = b.optString("price").trim(); if (price.length() > 40) throw new IllegalArgumentException("Fiyat en fazla 40 karakter olabilir."); b.put("price", price); }
+        if (b.has("store")) { String store = b.optString("store").trim(); if (store.length() > 60) throw new IllegalArgumentException("Mağaza adı en fazla 60 karakter olabilir."); b.put("store", store); }
+        if (b.has("buyUrl")) {
+            String url = b.optString("buyUrl").trim();
+            if (!url.isEmpty() && (!url.startsWith("https://") || url.length() > 2000)) throw new IllegalArgumentException("Satın alma linki https ile başlamalı.");
+            b.put("buyUrl", url);
+        }
         return b;
     }
     public static boolean same(JSONObject a, JSONObject b) {
         for (String key : FIELDS) if (!Objects.equals(a.opt(key), b.opt(key))) return false;
+        for (String key : PURCHASE) if (a.has(key) && b.has(key) && !a.optString(key).equals(b.optString(key))) return false;
         return true;
     }
     public static String statusName(String id) { return switch (id) { case "reading" -> "Okuyorum"; case "done" -> "Okudum"; case "paused" -> "Ara verdim"; default -> "Okuyacağım"; }; }
