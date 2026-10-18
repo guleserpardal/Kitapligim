@@ -59,7 +59,8 @@ public class MainActivity extends Activity {
     @Override public void onResume(){super.onResume();if(ready)queueSync();}
     @Override public void onBackPressed(){web.evaluateJavascript("window.onNativeBack&&window.onNativeBack()",value->{if(!"true".equals(value))super.onBackPressed();});}
     private void reply(String id,Object value,String error){if(isFinishing()||isDestroyed())return;runOnUiThread(()->web.evaluateJavascript("window.nativeResult("+JSONObject.quote(id)+","+(value==null?"null":value.toString())+","+(error==null?"null":JSONObject.quote(error))+")",null));}
-    private JSONObject state() throws Exception {JSONObject d=AppRuntime.store(this).state();d.put("connected",!new Credentials(this).get().isEmpty());d.put("platform","android");return d;}
+    private JSONObject state() throws Exception {JSONObject d=AppRuntime.store(this).state();d.put("connected",!new Credentials(this).get().isEmpty());JSONObject as;try{as=assistant().summary();}catch(Exception e){as=new JSONObject().put("configured",false);}d.put("assistant",as);d.put("platform","android");return d;}
+    private Assistant assistant(){return new Assistant(new Credentials(this,"assistant","kitapligim-assistant"));}
     private void emitState(){if(!ready||isFinishing()||isDestroyed())return;try{String js=state().toString();runOnUiThread(()->web.evaluateJavascript("window.receiveState("+js+")",null));}catch(Exception ignored){}}
     private void queueSync(){if(pendingSync!=null)pendingSync.cancel(false);pendingSync=AppRuntime.EXEC.schedule(()->{try{AppRuntime.sync(this);}catch(Exception ignored){}emitState();},2,TimeUnit.SECONDS);}
     final class Bridge {
@@ -74,6 +75,10 @@ public class MainActivity extends Activity {
                     case "resolve":{BookStore st=AppRuntime.store(MainActivity.this);JSONObject local=st.book(p.getString("id"));if(local==null)throw new Exception("Kitap bulunamadı.");st.put(SyncMerge.resolve(local,p.getBoolean("remote")));result=state();queueSync();break;}
                     case "search":result=search(p.getString("q"));break;
                     case "connect":{String token=p.getString("token").trim();if(token.isEmpty())throw new Exception("Notion bağlantı anahtarını gir.");new NotionSync(AppRuntime.store(MainActivity.this),token,AppRuntime.covers(MainActivity.this)).check();new Credentials(MainActivity.this).save(token);result=state();queueSync();break;}
+                    case "assistantSave":assistant().save(p.getString("url"),p.optString("altUrl"),p.optString("token"));result=state();break;
+                    case "assistantTest":result=assistant().test();break;
+                    case "assistantClear":assistant().clear();result=state();break;
+                    case "chat":result=assistant().chat(p);break;
                     case "disconnect":new Credentials(MainActivity.this).clear();result=state();break;
                     case "sync":AppRuntime.sync(MainActivity.this);result=state();break;
                     case "export":{JSONObject data=AppRuntime.store(MainActivity.this).state();File dir=new File(getCacheDir(),"exports");dir.mkdirs();File f=new File(dir,"Kitapligim-"+java.time.LocalDate.now()+".json");try(FileWriter out=new FileWriter(f)){out.write(data.toString(2));}Uri uri=FileProvider.getUriForFile(MainActivity.this,getPackageName()+".files",f);runOnUiThread(()->{Intent share=new Intent(Intent.ACTION_SEND).setType("application/json").putExtra(Intent.EXTRA_STREAM,uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);startActivity(Intent.createChooser(share,"Kitaplık bilgilerini dışa aktar"));});result=new JSONObject().put("ok",true);break;}
