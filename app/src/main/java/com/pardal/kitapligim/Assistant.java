@@ -55,6 +55,9 @@ public final class Assistant {
             }catch(SocketTimeoutException e){
                 if(method.equals("GET")||e.getMessage()!=null&&e.getMessage().toLowerCase().contains("connect"))continue;
                 throw new Exception("Danışman çok uzun düşündü. Biraz sonra yeniden dene.");
+            }catch(IOException e){
+                String m=e.getMessage()==null?"":e.getMessage();
+                if(m.contains("Cleartext"))throw new Exception("Bu adrese şifresiz bağlantı izni yok. Adres 192.168.1.12 veya Tailscale adresi (100.68.128.112) olmalı; başka bir adres için network_security_config.xml'e ekleyip yeni APK derlemek gerekir.");
             }finally{if(h!=null)h.disconnect();}
         }
         throw new Exception("PC'deki sunucuya ulaşılamıyor. PC açık mı, aynı ağda mısın? Evin dışındaysan Tailscale'in açık olduğundan emin ol.");

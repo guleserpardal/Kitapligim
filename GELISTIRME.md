@@ -37,9 +37,17 @@ Kaynak pakette Notion anahtarı, başka bir kullanıcı sırrı veya gerçek kit
 
 - Notion bağlantısı cihaz başına kurulur. Aynı aile tablosuna bağlanan başka telefonlar da kendi kurulumlarıyla eşitlenebilir; ayrı Notion erişimleri tanımlamak gerekir.
 - Notion'da `Profil` boş veya tanınmayan bir kayıt varsa sessizce bir kişiye atanmaz; hata gösterilir ve alanın düzeltilmesi istenir.
-- Kullanıcıya otomatik kitap önerisi, okuma içeriği indirme, kitap PDF'si veya mağazadan satın alma sunulmaz.
-- Yapay zekâ servis ücreti ve uygulamaya ait sunucu yoktur. Fotoğraflar kullanıcı Notion'a bağlayana kadar cihazda tutulur.
+- Okuma içeriği indirme, kitap PDF'si veya mağazadan satın alma sunulmaz. Öneriler yalnızca kullanıcı Kitap Danışmanı'na yazdığında gelir; kitaplığa otomatik eklenmez.
+- Kitap Danışmanı (1.1.0) için ücretli bir yapay zekâ servisi yoktur; ailenin kendi PC'sinde çalışan `server/` klasöründeki sunucu, o PC'de oturum açık Claude Code'u kullanır (kurulum: `server/README.md`). Sunucu yokken uygulamanın geri kalanı çalışır. Fotoğraflar kullanıcı Notion'a bağlayana kadar cihazda tutulur.
 
 ## 1.0.1 arama ve ekran düzeltmeleri
 
 WindowInsets artık WebView yerine dış FrameLayout üzerinde uygulanır; CSS sabit alt elemanlar Android gezinme çubuğuna taşmaz. Görsel pencere yüksekliği klavye açılışında yenilenir ve modal alt eylem alanı küçülmez. BookSearch, üç kaynağı bağımsız paralel sorgular; bir servis kesintisi diğer sonuçları düşürmez. Yayınevi HTML kartlarının yalnız başlık, yazar, ISBN ve görsel metaverileri jsoup ile okunur. Doğrulanmış 18 kayıt assets/catalog-tr.json içinde bulunur; fiyat, kitap metni veya kullanıcının okuma kaydı içermez. Kaynak: https://www.olimposdukkan.com/freida-mcfadden (2026-10-18). Yayınevi sayfa yapısı değişirse bu kaynağın ayrıştırıcısı da güncellenmelidir.
+
+## 1.1.0 Kitap Danışmanı ve yeni tasarım
+
+- Ara ekranındaki Danışman sekmesi, `Assistant.java` üzerinden PC sunucusuna (`POST /api/chat`) bağlanır. Sunucu adresi, yedek (Tailscale) adresi ve `APP_TOKEN` anahtarı Android Keystore ile şifreli saklanır; arayüze anahtar hiç gönderilmez. Önce ev adresi, ulaşılamazsa yedek adres denenir.
+- Şifresiz HTTP yalnızca `res/xml/network_security_config.xml` içindeki iki adrese (192.168.1.12, 100.68.128.112) izinlidir. Sunucunun adresi değişirse bu dosyaya eklenip yeni APK derlenmelidir.
+- Sohbet geçmişi telefonda (WebView yerel depolaması, profil başına son 40 mesaj) tutulur. Sunucuya yalnızca son 12 mesaj, profil adı ve kitaplık listesi (ad, yazar, raf, puan) gider.
+- Sunucu testleri: `cd server && npm test`. İstemci testi: `AssistantTest`.
+- Arayüz yeniden tasarlandı: dört sekme (Kitaplığım, Ara, Hedefler, Ayarlar), raf süzgeçleri ana ekranda, tam sayfa Kitap detayı. Profil avatarları şimdilik baş harflidir.

@@ -6,6 +6,12 @@ Güleser, İlker, Elis ve Lila için krem ve zeytin tonlarında kişisel Android
 
 Bu paket 1.0.1 kaynak kodunu içerir. GitHub'a yükleme adımları `GITHUB.md`, derleme ayrıntıları `GELISTIRME.md` dosyasındadır. İmza anahtarları ve parolalar pakete dahil edilmemiştir. Java 17 ve Android SDK 35 ile Android Studio'da açılabilir; imza anahtarı olmadan debug APK derlenebilir.
 
+## 1.1.0 güncellemesi
+
+- **Kitap Danışmanı:** Ara ekranındaki Danışman sekmesinde sohbet ederek kitap bulur, aklında kalan bir sahneyi ya da ruh halini anlatarak öneri alırsın. PC'deki Claude ile çalışır; kurulum için `server/README.md`. Sunucu kapalıyken uygulamanın geri kalanı normal çalışır.
+- **Yeni tasarım:** dört sekmeli alt menü, ana ekranda raflar, tam sayfa kitap detayı, adım düğmeli sayfa girişi.
+- `versionCode 3`: aynı imzayla Güncelle'ye dokunarak yüklenir, kayıtların korunur.
+
 ## 1.0.1 güncellemesi
 
 - Samsung/Android sistem gezinme çubuğu için boşluk, WebView'ın dışındaki yerleşimde uygulanır. Kaydet ve Vazgeç düğmeleri alt çubuğun üstünde kalır; formun içi kaydırılır. Klavye açıldığında pencereye yeniden uyum sağlar.
