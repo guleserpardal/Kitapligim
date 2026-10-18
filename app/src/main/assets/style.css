@@ -268,3 +268,58 @@ body.typing .chat-bar{bottom:0}
 .sheet-head,.sheet-footer{flex:0 0 auto}
 .sheet-footer{position:relative;z-index:1;box-shadow:0 -4px 14px #322f2708}
 @media(min-width:600px){.sheet{max-height:calc(var(--viewport-height,100vh) - 48px)}}
+
+/* price and purchase link */
+.price-tag{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:14px;font-weight:650;color:var(--green-dark)}
+.price-tag svg{width:16px;height:16px}
+.price-tag span{font-weight:400;font-size:12px;color:var(--muted)}
+.price-tag.pending{font-weight:400;font-size:12px;color:#a8977d}
+.offer-card{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;margin:4px 0 14px;border-radius:16px;background:linear-gradient(135deg,#eef0dd,#e4e8cc);border:1px solid #d6dbb8}
+.offer-card.search,.offer-card.pending{background:#f3ead8;border-color:#e3d6bd}
+.offer-icon{width:40px;height:40px;border-radius:12px;background:#fffdf3;color:var(--green-dark);display:grid;place-items:center;flex:none}
+.offer-text{flex:1;min-width:0;display:flex;flex-direction:column}
+.offer-text strong{font:500 20px Georgia,serif;color:var(--brown)}
+.offer-card.search .offer-text strong,.offer-card.pending .offer-text strong{font-size:16px}
+.offer-store{font-size:12px;color:var(--muted);margin-top:1px}
+.offer-card .btn{flex:none;gap:6px}
+.offer-card .btn svg{width:15px;height:15px}
+.offer-spinner{width:22px;height:22px;margin:9px;border:2px solid #e1d7c5;border-top-color:#667052;border-radius:50%;animation:spin .8s linear infinite;flex:none}
+.find-price{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:0 0 14px;padding:12px;border:1.5px dashed #cdbf9f;border-radius:14px;color:var(--green-dark);font-size:14px;font-weight:600}
+.find-price svg{width:18px;height:18px}
+
+/* add / edit book sheet */
+.add-form{padding-top:14px}
+.add-hero{display:flex;gap:16px;align-items:flex-start;padding:16px;margin:0 -6px 14px;border-radius:20px;background:linear-gradient(160deg,#f1e3c6,#ead6b2)}
+.add-cover{width:96px;flex:none}
+.add-cover .cover{box-shadow:4px 8px 16px #3d2a1a38}
+.add-hero-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.add-hero-info input,.add-hero-info textarea{background:transparent;border:0;border-bottom:1.5px dashed #c9b28d;border-radius:0;padding:6px 2px;box-shadow:none}
+.add-hero-info input:focus,.add-hero-info textarea:focus{border-bottom-color:var(--green);box-shadow:none}
+.title-input{font:500 21px/1.25 Georgia,'Noto Serif',serif;color:var(--brown);min-height:0;resize:none}
+.author-input{font-size:15px;color:#6c5a47}
+.add-meta{font-size:12px;color:#8a7458;margin-top:6px;line-height:1.5}
+.photo-remove{margin-top:8px}
+.form-group{margin:0 0 18px}
+.form-group h4{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#9a7661}
+.form-group .field{margin:0 0 12px}
+.form-group .row .field{margin-bottom:12px}
+.who-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.who{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);font-size:13px;color:#6b5b49;cursor:pointer}
+.who .avatar.sm{width:40px;height:40px;font-size:18px}
+.who:has(input:checked){border-color:var(--green);background:#f1f2e2;color:var(--ink);font-weight:650}
+.shelf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.shelf-tile{position:relative;display:flex;align-items:center;gap:10px;padding:13px 12px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);font-size:14px;color:#5c4d3f;cursor:pointer}
+.shelf-tile svg{color:#9b8a73}
+.shelf-tile:has(input:checked){background:var(--green);border-color:var(--green);color:#fffdf2;font-weight:650}
+.shelf-tile:has(input:checked) svg{color:#fffdf2}
+.who input,.shelf-tile input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.who:has(input:focus-visible),.shelf-tile:has(input:focus-visible){outline:3px solid #ae714b;outline-offset:2px}
+.add-form:has(input[name=status][value=want]:checked) .dates{display:none}
+.rate-group .rating svg{width:34px;height:34px}
+.add-form textarea[name=notes]{min-height:90px}
+.more{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:0 14px;margin-bottom:8px}
+.more summary{list-style:none;cursor:pointer;padding:14px 0;font-weight:600;color:#5c4d3f;display:flex;flex-direction:column;gap:2px}
+.more summary::-webkit-details-marker{display:none}
+.more summary span{font-weight:400;font-size:12px;color:var(--muted)}
+.more[open] summary{border-bottom:1px solid var(--line);margin-bottom:12px}
+.more .field{margin:0 0 12px}

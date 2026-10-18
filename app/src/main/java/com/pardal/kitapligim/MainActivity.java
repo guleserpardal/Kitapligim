@@ -66,6 +66,8 @@ public class MainActivity extends Activity {
     final class Bridge {
         @JavascriptInterface public void request(String id,String action,String payload){
             if(action.equals("photo")){runOnUiThread(()->selectPhoto(id,payload));return;}
+            // Price lookups use their own threads so slow shops never delay saving or syncing.
+            if(action.equals("offers")){OFFERS.execute(()->{try{reply(id,offers(new JSONObject(payload).getJSONArray("books")),null);}catch(Exception e){reply(id,null,"Fiyat bilgisi alınamadı.");}});return;}
             AppRuntime.EXEC.execute(()->{try{JSONObject p=new JSONObject(payload);Object result;
                 switch(action){
                     case "state":ready=true;result=state();queueSync();break;
@@ -82,6 +84,7 @@ public class MainActivity extends Activity {
                     case "disconnect":new Credentials(MainActivity.this).clear();result=state();break;
                     case "sync":AppRuntime.sync(MainActivity.this);result=state();break;
                     case "export":{JSONObject data=AppRuntime.store(MainActivity.this).state();File dir=new File(getCacheDir(),"exports");dir.mkdirs();File f=new File(dir,"Kitapligim-"+java.time.LocalDate.now()+".json");try(FileWriter out=new FileWriter(f)){out.write(data.toString(2));}Uri uri=FileProvider.getUriForFile(MainActivity.this,getPackageName()+".files",f);runOnUiThread(()->{Intent share=new Intent(Intent.ACTION_SEND).setType("application/json").putExtra(Intent.EXTRA_STREAM,uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);startActivity(Intent.createChooser(share,"Kitaplık bilgilerini dışa aktar"));});result=new JSONObject().put("ok",true);break;}
+                    case "openLink":{String url=p.getString("url");if(!url.startsWith("https://"))throw new Exception("Bağlantı açılamadı.");runOnUiThread(()->startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url))));result=new JSONObject().put("ok",true);break;}
                     case "open":{String url=p.getString("url");if(!url.startsWith("https://www.notion.so/")&&!url.startsWith("https://app.notion.com/")&&!url.startsWith("https://www.notion.com/"))throw new Exception("Bağlantı açılamadı.");runOnUiThread(()->startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url))));result=new JSONObject().put("ok",true);break;}
                     default:throw new Exception("İşlem tanınmadı.");
                 }
@@ -93,6 +96,14 @@ public class MainActivity extends Activity {
         JSONArray catalog;
         try(InputStream in=getAssets().open("catalog-tr.json")){catalog=new JSONArray(new String(Http.readLimited(in,200000),StandardCharsets.UTF_8));}
         return new BookSearch(url->Http.getText(url),catalog).search(query);
+    }
+    private static final ExecutorService OFFERS=Executors.newFixedThreadPool(4);
+    private JSONArray offers(JSONArray books) throws Exception {
+        BookSearch search=new BookSearch(url->Http.getText(url),new JSONArray());List<Callable<JSONObject>> jobs=new ArrayList<>();
+        for(int i=0;i<Math.min(books.length(),12);i++){JSONObject b=books.getJSONObject(i);jobs.add(()->search.offer(b.optString("isbn"),b.optString("title"),b.optString("author")));}
+        ExecutorService pool=Executors.newFixedThreadPool(4);JSONArray out=new JSONArray();
+        try{for(Future<JSONObject> f:pool.invokeAll(jobs,12,TimeUnit.SECONDS)){JSONObject offer;try{offer=f.get();}catch(Exception e){offer=new JSONObject();}out.put(offer);}}finally{pool.shutdownNow();}
+        return out;
     }
     private void selectPhoto(String id,String payload){
         try{if(photoRequest!=null)throw new Exception("Bir fotoğraf işlemi zaten açık.");photoRequest=id;String source=new JSONObject(payload).optString("source");

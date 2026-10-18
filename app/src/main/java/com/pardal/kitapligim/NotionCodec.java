@@ -4,6 +4,7 @@ import org.json.*;
 import java.util.*;
 
 public final class NotionCodec {
+    public static final List<String> PURCHASE_COLUMNS = List.of("Fiyat","Mağaza","Satın Alma Linki");
     private static JSONObject value(String k, Object v) throws JSONException { return new JSONObject().put(k, v); }
     private static JSONArray rich(String s) throws JSONException {
         JSONArray r=new JSONArray();
@@ -18,6 +19,7 @@ public final class NotionCodec {
     }
     private static int number(JSONObject p,String k) throws JSONException {return p.optJSONObject(k)==null?0:p.getJSONObject(k).optInt("number");}
     private static String select(JSONObject p,String k) throws JSONException {JSONObject x=p.optJSONObject(k);if(x==null || x.optJSONObject("select")==null)return "";return x.getJSONObject("select").optString("name");}
+    private static String url(JSONObject p,String k) throws JSONException {JSONObject x=p.optJSONObject(k);return x==null||x.isNull("url")?"":x.optString("url");}
     private static String date(JSONObject p,String k) throws JSONException {JSONObject x=p.optJSONObject(k);if(x==null||x.optJSONObject("date")==null)return "";return x.getJSONObject("date").optString("start").split("T")[0];}
     public static JSONObject toProperties(JSONObject b) throws JSONException {
         JSONObject p=new JSONObject();
@@ -30,6 +32,9 @@ public final class NotionCodec {
         p.put("Kapak",value("url",b.optString("cover").isEmpty()?JSONObject.NULL:b.getString("cover")));
         p.put("Silindi",value("checkbox",b.optBoolean("deleted")));
         if(b.optString("photoKey").isEmpty())p.put("Kapak Fotoğrafı",value("files",new JSONArray()));
+        p.put("Fiyat",value("rich_text",rich(b.optString("price"))));
+        p.put("Mağaza",value("rich_text",rich(b.optString("store"))));
+        p.put("Satın Alma Linki",value("url",b.optString("buyUrl").isEmpty()?JSONObject.NULL:b.getString("buyUrl")));
         return p;
     }
     public static JSONObject fromPage(JSONObject page) throws JSONException {
@@ -39,8 +44,12 @@ public final class NotionCodec {
         JSONObject b=new JSONObject().put("id",id).put("title",text(p,"Kitap","title")).put("profile",profile).put("status",Book.statusId(select(p,"Durum")));
         for(String[] f:new String[][]{{"Yazar","author"},{"ISBN","isbn"},{"Notlar","notes"}})b.put(f[1],text(p,f[0],"rich_text"));
         b.put("totalPages",number(p,"Sayfa Sayısı")).put("currentPage",number(p,"Kaldığım Sayfa")).put("rating",number(p,"Puan"));
-        b.put("cover",p.optJSONObject("Kapak")==null?"":p.getJSONObject("Kapak").optString("url", ""));
+        b.put("cover",url(p,"Kapak"));
         b.put("startedAt",date(p,"Başlama")).put("finishedAt",date(p,"Bitiş"));
+        // Purchase columns are optional in the table; a missing column leaves the key out so local values survive.
+        if(p.has("Fiyat"))b.put("price",text(p,"Fiyat","rich_text"));
+        if(p.has("Mağaza"))b.put("store",text(p,"Mağaza","rich_text"));
+        if(p.has("Satın Alma Linki"))b.put("buyUrl",url(p,"Satın Alma Linki"));
         boolean deleted=page.optBoolean("archived")||page.optBoolean("is_archived")||page.optBoolean("in_trash")||(p.optJSONObject("Silindi")!=null && p.getJSONObject("Silindi").optBoolean("checkbox"));
         b.put("deleted",deleted).put("remotePageId",page.getString("id")).put("remoteEditedAt",page.getString("last_edited_time")).put("updatedAt",page.getString("last_edited_time")).put("syncStatus","synced");
         JSONArray photos=p.optJSONObject("Kapak Fotoğrafı")==null?null:p.getJSONObject("Kapak Fotoğrafı").optJSONArray("files");
