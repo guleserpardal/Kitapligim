@@ -354,3 +354,21 @@ body.typing .chat-bar{bottom:0}
 .remove-book svg{width:18px;height:18px}
 .detail-top .icon-btn{color:var(--brown)}
 .shelf-tile .tick svg,.who .tick svg{width:13px;height:13px;color:#fffdf2;stroke-width:3}
+
+/* underlined passages */
+.hl-card{padding:14px 16px}
+.hl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hl-head label{display:flex;align-items:center;gap:8px;font-size:16px}
+.hl-head svg{width:20px;height:20px;color:#8a6a2c}
+.hl{display:block;width:100%;text-align:left;padding:12px 4px 12px 14px;border-left:3px solid #d8b75a;margin:0 0 10px;background:#fffdf6;border-radius:0 10px 10px 0}
+.hl-text{font:16px/1.65 Georgia,'Noto Serif',serif;color:var(--ink);white-space:pre-wrap;text-decoration:underline;text-decoration-color:#d8b75a;text-decoration-thickness:2px;text-underline-offset:4px}
+.hl-meta{display:block;font-size:12px;color:var(--muted);margin-top:6px}
+.hl-empty{font-size:13px;color:#85796a;margin:0 0 12px}
+.hl-add{min-height:44px;margin-top:2px}
+.hl-input{font:16px/1.6 Georgia,'Noto Serif',serif;min-height:120px}
+.hl-photo{margin:-4px 0 6px}
+.hl-photo>span{display:block;font-size:13px;color:#7c6e5b;margin-bottom:8px}
+.hl-photo>div:first-of-type{display:flex;gap:8px;flex-wrap:wrap}
+.hl-photo .shop-chip svg{width:16px;height:16px}
+#hl-lines .muted{margin:12px 0 8px;display:block}
+.ocr-lines button.used{background:#efe3b8;border-color:#d8b75a}
