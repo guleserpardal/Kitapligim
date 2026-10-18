@@ -1,0 +1,16 @@
+.gradle/
+**/build/
+local.properties
+*.iml
+.idea/
+
+# Local signing keys and credentials
+signing/
+*.jks
+*.keystore
+.env
+.env.*
+!.env.example
+*.apk
+*.aab
+.DS_Store

@@ -1,0 +1,39 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.pardal.kitapligim'
+    compileSdk 35
+    defaultConfig { applicationId 'com.pardal.kitapligim'; minSdk 30; targetSdk 35; versionCode 2; versionName '1.0.1' }
+    def signingProperties = new Properties()
+    def signingPropertiesFile = rootProject.file('signing/signing.properties')
+    def hasPersonalSigning = signingPropertiesFile.exists() && rootProject.file('signing/kitapligim.jks').exists()
+    if (hasPersonalSigning) {
+        signingPropertiesFile.withInputStream { signingProperties.load(it) }
+        signingConfigs {
+            personal {
+                storeFile rootProject.file('signing/kitapligim.jks')
+                storePassword signingProperties.storePassword
+                keyAlias 'kitapligim'
+                keyPassword signingProperties.keyPassword
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (hasPersonalSigning) signingConfig signingConfigs.personal
+        }
+    }
+    splits { abi { enable true; reset(); include 'arm64-v8a', 'x86_64'; universalApk false } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    testOptions { unitTests.returnDefaultValues = true }
+}
+dependencies {
+    implementation 'org.jsoup:jsoup:1.18.3'
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
+    implementation 'androidx.core:core:1.15.0'
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
+    implementation 'com.google.mlkit:barcode-scanning:17.3.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
+}
