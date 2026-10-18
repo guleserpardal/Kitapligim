@@ -288,43 +288,69 @@ body.typing .chat-bar{bottom:0}
 .find-price svg{width:18px;height:18px}
 
 /* add / edit book sheet */
-.add-form{padding-top:14px}
-.add-hero{display:flex;gap:16px;align-items:flex-start;padding:16px;margin:0 -6px 14px;border-radius:20px;background:linear-gradient(160deg,#f1e3c6,#ead6b2)}
-.add-cover{width:96px;flex:none}
-.add-cover .cover{box-shadow:4px 8px 16px #3d2a1a38}
-.add-hero-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
-.add-hero-info input,.add-hero-info textarea{background:transparent;border:0;border-bottom:1.5px dashed #c9b28d;border-radius:0;padding:6px 2px;box-shadow:none}
-.add-hero-info input:focus,.add-hero-info textarea:focus{border-bottom-color:var(--green);box-shadow:none}
-.title-input{font:500 21px/1.25 Georgia,'Noto Serif',serif;color:var(--brown);min-height:0;resize:none}
-.author-input{font-size:15px;color:#6c5a47}
-.add-meta{font-size:12px;color:#8a7458;margin-top:6px;line-height:1.5}
+.add-search{margin:16px 0 10px}
+.add-search input{font-size:16px;padding:12px 4px}
+.add-tools{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.add-tool{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 8px;border:1.5px solid #5f6a45;border-radius:14px;background:transparent;font:500 15px Georgia,'Noto Serif',serif;color:var(--brown)}
+.add-tool svg{width:22px;height:22px;color:var(--brown)}
+.add-form{padding-top:4px}
+.book-card{display:flex;gap:16px;padding:14px;margin:4px 0 14px;border-radius:18px;background:#fbf5ea;border:1px solid var(--line);box-shadow:var(--shadow)}
+.book-card-cover{position:relative;width:38%;max-width:150px;flex:none}
+.book-card-cover .cover{border-radius:8px;box-shadow:3px 6px 14px #3d2a1a30}
+.book-card-cover .cover-title{font-size:18px}
+.cover-cam{position:absolute;right:8px;bottom:8px;z-index:2;width:40px;height:40px;border-radius:50%;background:#fffaf1;color:var(--brown);display:grid;place-items:center;box-shadow:0 2px 8px #0003}
+.cover-cam svg{width:20px;height:20px}
+.book-card-fields{flex:1;min-width:0;display:flex;flex-direction:column}
+.book-card-fields .field{margin:0 0 12px}
+.book-card-fields input{padding:11px 12px;font-size:16px}
+.edit-more{margin-top:2px;font-weight:500;color:#5b5a3f;font-size:13px;text-align:left}
+.edit-more svg{width:18px;height:18px}
 .photo-remove{margin-top:8px}
-.form-group{margin:0 0 18px}
-.form-group h4{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#9a7661}
-.form-group .field{margin:0 0 12px}
-.form-group .row .field{margin-bottom:12px}
-.who-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.who{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);font-size:13px;color:#6b5b49;cursor:pointer}
-.who .avatar.sm{width:40px;height:40px;font-size:18px}
-.who:has(input:checked){border-color:var(--green);background:#f1f2e2;color:var(--ink);font-weight:650}
-.shelf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.shelf-tile{position:relative;display:flex;align-items:center;gap:10px;padding:13px 12px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);font-size:14px;color:#5c4d3f;cursor:pointer}
-.shelf-tile svg{color:#9b8a73}
-.shelf-tile:has(input:checked){background:var(--green);border-color:var(--green);color:#fffdf2;font-weight:650}
-.shelf-tile:has(input:checked) svg{color:#fffdf2}
+.add-h{font:500 22px Georgia,'Noto Serif',serif;color:var(--ink);margin:18px 0 12px}
+.who-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.who{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;font:15px Georgia,'Noto Serif',serif;color:var(--ink);cursor:pointer}
+.who-ring{position:relative;border-radius:50%;padding:3px;border:2px solid transparent}
+.who .avatar{width:66px;height:66px;font-size:28px;border:0}
+.who:has(input:checked) .who-ring{border-color:var(--green-dark)}
+.tick{position:absolute;display:none;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--green-dark);color:#fffdf2;border:2px solid var(--bg)}
+.tick svg{width:13px;height:13px;stroke-width:3}
+.who .tick{top:-2px;right:-2px}
+.who:has(input:checked) .tick,.shelf-tile:has(input:checked) .tick{display:grid}
+.shelf-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.shelf-tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 6px 14px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);font:15px Georgia,'Noto Serif',serif;color:var(--ink);cursor:pointer;text-align:center}
+.shelf-tile svg{width:34px;height:34px;stroke-width:1.4;color:#5f6a45}
+.shelf-tile .tick{top:8px;right:8px}
+.shelf-tile:has(input:checked){background:#eef0dd;border-color:var(--green-dark)}
 .who input,.shelf-tile input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
-.who:has(input:focus-visible),.shelf-tile:has(input:focus-visible){outline:3px solid #ae714b;outline-offset:2px}
-.add-form:has(input[name=status][value=want]:checked) .dates{display:none}
-.rate-group .rating svg{width:34px;height:34px}
+.who:has(input:focus-visible),.shelf-tile:has(input:focus-visible){outline:3px solid #ae714b;outline-offset:2px;border-radius:14px}
+.row.pages{margin-top:16px}
+.row.pages .field{margin:0 0 14px}
 .add-form textarea[name=notes]{min-height:90px}
 .more{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:0 14px;margin-bottom:8px}
-.more summary{list-style:none;cursor:pointer;padding:14px 0;font-weight:600;color:#5c4d3f;display:flex;flex-direction:column;gap:2px}
+.more summary{list-style:none;cursor:pointer;padding:12px 0;display:flex;align-items:center;gap:12px}
 .more summary::-webkit-details-marker{display:none}
-.more summary span{font-weight:400;font-size:12px;color:var(--muted)}
+.more summary>svg{color:#6c5a45}
+.more summary>svg:last-child{margin-left:auto;transition:transform .2s}
+.more[open] summary>svg:last-child{transform:rotate(180deg)}
+.more-text{display:flex;flex-direction:column;min-width:0}
+.more-text strong{font:500 17px Georgia,'Noto Serif',serif;color:var(--ink)}
+.more-text small{font-size:12px;color:var(--muted);margin-top:2px}
 .more[open] summary{border-bottom:1px solid var(--line);margin-bottom:12px}
 .more .field{margin:0 0 12px}
+.more .rating svg{width:32px;height:32px}
+.sheet-footer .add-submit{flex:1;min-height:54px;font:500 18px Georgia,'Noto Serif',serif;gap:12px}
+.add-submit svg{width:24px;height:24px}
+
+/* price links */
 .shop-links{margin:-6px 0 16px}
 .shop-links>span{display:block;font-size:12px;color:var(--muted);margin:0 0 7px 2px}
 .shop-links>div{display:flex;flex-wrap:wrap;gap:7px}
 .shop-chip{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;border:1px solid #d9ccb5;border-radius:20px;background:#fffaf2;font-size:13px;color:#5c4d3f}
 .shop-chip svg{width:13px;height:13px;color:#9b8a73}
+.shop-chip strong{font-weight:650;color:var(--green-dark);margin-left:2px}
+.shop-chip.best{border-color:var(--green);background:#eef0dd}
+.chip-dots{color:#a8977d}
+.remove-book{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:6px 0 4px;padding:13px;border-radius:14px;color:#a14a2e;font-size:14px;font-weight:600;border:1px solid #ecd3c4;background:#fbf0e8}
+.remove-book svg{width:18px;height:18px}
+.detail-top .icon-btn{color:var(--brown)}
+.shelf-tile .tick svg,.who .tick svg{width:13px;height:13px;color:#fffdf2;stroke-width:3}
