@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Yalnız PC'deki Kitap Danışmanı sunucusunun adresleri (ev ağı ve Tailscale) şifresiz HTTP ile açılabilir. Adres değişirse buraya ekle. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false"/>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">192.168.1.12</domain>
+        <domain includeSubdomains="false">100.68.128.112</domain>
+    </domain-config>
+</network-security-config>

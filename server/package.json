@@ -1,0 +1,12 @@
+{
+  "name": "kitapligim-sunucu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kitaplığım uygulaması için PC üzerinde çalışan kitap danışmanı sunucusu (Claude Code CLI kullanır).",
+  "main": "src/server.js",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js"
+  }
+}
