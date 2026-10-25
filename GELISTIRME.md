@@ -6,7 +6,7 @@ Bu kaynak paketi Android Studio'da açılabilen bağımsız bir Gradle projesidi
 - Gradle Wrapper 8.9, Android Gradle Plugin 8.7.3.
 - En düşük Android sürümü: 11 / API 30. Hedef API 35.
 - ABI'ler: arm64-v8a (teslim edilen telefon APK'sı), x86_64 (emülatör).
-- Uygulama kimliği: `com.pardal.kitapligim`, sürüm: `1.4.0` / kod `6`.
+- Uygulama kimliği: `com.pardal.kitapligim`, sürüm: `1.4.1` / kod `7`.
 - Yerel HTML/CSS/JavaScript ekranları Android WebViewAssetLoader ile güvenli yerel HTTPS kökeninden sunulur. Ağ araması, OCR, kamera, disk, Android Keystore ve Notion bağlantısı Java katmanındadır. Web sitesi veya kurulum bağlantısı gerektirmez.
 - Kitaplar `AtomicFile` ile uygulamanın özel alanına yazılır. Tüm yerel yazmalar ve eşitleme tek iş parçacıklı yürütücüden geçer.
 - Notion REST sürümü: 2025-09-03; tek aile veri kaynağı: `a77420e6-f540-49a2-84c0-45c3bffa711a`.
@@ -67,6 +67,14 @@ npm run test:ui
 ```
 
 Test yerel bir HTTP sunucusu açıp kapatır; örnek verileri yalnız tarayıcının test bağlamında tutar, gerçek Notion/kamera servisini çağırmaz. Dört rafı, listelerin tamamını, aramayı, profil ayrımını, kaydedilen notu, ara verilen kitabın ilerlemesini, beş ekleme seçeneğini, geri tuşunu ve dar ekranları kontrol eder. `test-results/` görselleri Git dışında tutulur. Farklı bir Chromium ikilisi için `PLAYWRIGHT_CHROMIUM_EXECUTABLE` ortam değişkeni kullanılabilir.
+
+## 1.4.1 arama kaynakları
+
+`BookSearch` dört bağımsız ağ kaynağını paralel tarar: canlı Olimpos, Google Books, Open Library ve Trendyol kitap kategorisi. Yerel yayınevi yedeği ayrıca ağ isteği olmadan aranır. Ağ işleri toplam 14 saniyeyle sınırlandırılır. Trendyol araması yalnız `wc=91` kitap kategorisine gider; ürün kartlarındaki görünen ad, kapak ve doğrulanmış Trendyol ürün bağlantısı alınır. Marka yazara, sayfa aralığı kesin sayfa sayısına dönüştürülmez. Trendyol erişimi/yapısı değişirse kaynak boş dönebilir; engel aşılmaz.
+
+Google Books boş dil filtresi sonucunu filtresiz yeniden dener; 429 hatasını tekrar denemez. ISBN kopyalama biçimleri normalize edilir. Eski arama yanıtlarının yeni sorgunun sonuçlarına yazması engellenir. Arama/advisor mağaza bağlantıları ve elle ekleme formuna sorgu aktarımı `tests/search-ui.cjs` ile denetlenir. `BookSearchTest` kaynak kesintisi, yeni kart ayrıştırıcısı, ISBN ve boş dil filtresini kapsar. `server/test/enrich.test.js` başlık/yazar doğrulaması, katalog eşitliği, Trendyol, kota hatası ve baskı verisini kapsar.
+
+Sunucu kurulumunun APK'dan bağımsız güncellenmesi gerekir; `server/README.md` talimatları bu ayrımı açıklar. Claude'un araçsız görüşmesi değişmez; doğrulama aday üretildikten sonra yapılır.
 
 ## 1.4.0 günlük kayıt modeli
 

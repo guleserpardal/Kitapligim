@@ -6,6 +6,15 @@ Güleser, İlker, Elis ve Lila için krem ve zeytin tonlarında kişisel Android
 
 Bu depo Kitaplığım uygulamasının kaynak kodunu içerir. GitHub'a yükleme adımları `GITHUB.md`, derleme ayrıntıları `GELISTIRME.md` dosyasındadır. İmza anahtarları ve parolalar pakete dahil edilmemiştir. Java 17 ve Android SDK 35 ile Android Studio'da açılabilir; imza anahtarı olmadan debug APK derlenebilir.
 
+## 1.4.1 — Kitap arama ve danışman doğrulaması
+
+- Kitap araması artık Trendyol'un kitap kategorisindeki açık ürün kartlarını da diğer kataloglarla paralel tarar. Yazar/ISBN/kesin sayfa sayısı ilanda yoksa boş bırakılır; kayıt öncesi kontrol edilir. Bir kaynağın kesintisi diğer sonuçları engellemez.
+- Google Books'ta boş dil filtresi sonucu filtresiz denenir. Yapıştırılan ISBN'deki tire ve boşluklar temizlenir. Arka arkaya iki aramada eski yanıt yeni sonucu değiştirmez.
+- Boş sonuç ve kesinti ekranlarından aynı adı **Trendyol’da ara** ile açabilirsin. Elle eklerken yazdığın ad veya ISBN korunur. Danışmanda doğrulanamayan öneride de mağaza araması bulunur.
+- Danışman aynı Türkçe katalogdan ve Trendyol ilanlarından da doğrulama yapar. Benzer başlıkla serinin başka kitabı veya başka yazar doğrulanmaz. Karışık dildeki eser kaydından rastgele ISBN/sayfa alınmaz.
+- Danışmanın bu düzeltmeleri için PC'deki `server` dosyaları da güncellenmelidir; `server/README.md` adımlarını izle. APK PC sunucusunu otomatik güncellemez. Claude görüşmesi hâlâ araçsızdır; canlı web araştırması yapmaz.
+- `versionName 1.4.1`, `versionCode 7`. Aynı imzayla uygulamayı kaldırmadan güncellenir. Mağaza yapısı, erişim engelleri ve katalog eksikleri nedeniyle her kitap için sonuç garantisi yoktur.
+
 ## 1.4.0 — Günlük okuma hedefi ve zincir
 
 - Her profil için günlük sayfa hedefi. Ana sayfadaki **Bugünkü okuman** kartından hedefini seç; 10, 20, 30 sayfalık kısayollar veya kendi sayını kullan.
@@ -59,7 +68,7 @@ Teslim edilen APK, Samsung Galaxy S24 Ultra gibi **ARM64, Android 11 ve üstü**
 - Dört ayrı aile profili ve her kişinin kendi kitapları, notları, puanları, ilerlemesi.
 - Okuyacaklarım, Okuyorum, Okuduklarım ve Ara verdiklerim rafları.
 - Başlama/bitiş tarihleri, sayfa sayısı, kaldığın sayfa, 1–5 yıldız, not ve alıntılar.
-- Kitap, yazar veya ISBN ile Olimpos Türkçe yayınevi kataloğu, Google Books ve Open Library araması. Google Books anahtar olmadan kullanılır; kota veya erişim hatalarında Open Library devreye girer. Her Türkçe baskının bulunacağı garanti edilemez. Bulunamayan kitap elle eklenir.
+- Kitap, yazar veya ISBN ile Olimpos Türkçe yayınevi kataloğu, Google Books, Open Library ve Trendyol kitap araması. Google Books anahtar olmadan kullanılır; kota veya erişim hatalarında Open Library devreye girer. Her Türkçe baskının bulunacağı garanti edilemez. Bulunamayan kitap elle eklenir.
 - Kameradan ya da galeriden kapak ekleme. **Paketin içindeki ML Kit modeli** yazı ve ISBN barkodunu cihazda okur; fotoğrafı okumak için ücretli bir yapay zekâ servisi veya API anahtarı gerekmez. Bulunan metin kaydetmeden önce kontrol edilir.
 - Yıllık okuma hedefi ve aile özeti. Yıllık sayı, bitiş tarihi ilgili yılda olan kitaplardan hesaplanır. Hedefi kullanıcı belirler; önceden atanmış bir hedef yoktur.
 - JSON dışa aktarma: kitap bilgileri ve notlar dahil, fotoğraf dosyaları ve Notion anahtarı hariç.
@@ -97,7 +106,7 @@ Profilini seç → Kitap ekle → kitap adıyla ara veya fotoğrafını ekle →
 
 ## Doğrulama ve sınırlar
 
-- APK derlemesi, 19 eşitleme/veri ve arama testi ve Android lint kontrolü çalıştırıldı.
+- 1.4.1: 52 Android birim testi, 20 sunucu testi, 13 günlük okuma testi, ana sayfa/günlük hedef/arama arayüz akışları, release derlemesi ve Android lint geçti. Gerçek telefon/PC danışman oturumu bu ortamda denenmedi.
 - Mobil arayüzde kitap ekleme, yeniden açılışta verinin korunması, profillerin ayrılığı, sayfa sınırları, kaydedilmemiş taslak, kitabı bitirme, yıllık hedef ve kaldırma akışları tarayıcıda doğrulandı.
 - Gerçek Notion hesabıyla uçtan uca eşitleme, kullanıcı telefonda bağlantı anahtarını tanımladıktan sonra doğrulanabilir. Sohbet bağlantısı ile tablo oluşturulmuş olması, APK'nın Notion'a bağlandığı anlamına gelmez.
 - Gerçek kamerayla ve farklı kapak tasarımlarıyla OCR doğruluğu cihazda kontrol edilmelidir. Işık, netlik, yazı tipi ve kapak tasarımı sonucu etkiler.

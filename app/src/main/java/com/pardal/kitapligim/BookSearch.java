@@ -16,12 +16,13 @@ public final class BookSearch {
     public BookSearch(Fetcher fetch, JSONArray catalog){this.fetch=fetch;this.catalog=catalog;}
     public static String fold(String value){return Normalizer.normalize(value.toLowerCase(Locale.forLanguageTag("tr")).replace('ı','i'),Normalizer.Form.NFD).replaceAll("\\p{M}","").replaceAll("[^a-z0-9]+"," ").trim();}
     public JSONArray search(String input) throws Exception {
-        String query=input.trim();if(query.length()<2)throw new IllegalArgumentException("En az 2 karakter yaz.");
+        String query=queryText(input);if(query.length()<2)throw new IllegalArgumentException("En az 2 karakter yaz.");
         String encoded=URLEncoder.encode(query,"UTF-8");
-        ExecutorService pool=Executors.newFixedThreadPool(3);
+        ExecutorService pool=Executors.newFixedThreadPool(4);
         List<Callable<JSONArray>> jobs=List.of(
             ()->publisher(fetch.get("https://www.olimposdukkan.com/search?q="+encoded)),
-            ()->google(new JSONObject(fetch.get("https://www.googleapis.com/books/v1/volumes?q="+encoded+"&maxResults=16&printType=books&langRestrict=tr"))),
+            ()->googleSearch(encoded),
+            ()->trendyol(fetch.get("https://www.trendyol.com/sr?wc=91&q="+encoded),query),
             ()->openLibrary(new JSONObject(fetch.get("https://openlibrary.org/search.json?q="+encoded+"&lang=tr&limit=16&fields=key,title,author_name,cover_i,isbn,number_of_pages_median,editions,editions.title,editions.language,editions.isbn,editions.cover_i,editions.number_of_pages")),query)
         );
         JSONArray combined=new JSONArray();Set<String> seen=new HashSet<>();
@@ -42,9 +43,36 @@ public final class BookSearch {
         sorted.sort((a,b)->Integer.compare(rank(b,query),rank(a,query)));
         JSONArray result=new JSONArray();for(JSONObject book:sorted)result.put(book);return result;
     }
+    /** A pasted barcode often contains spaces or hyphens. Keep title punctuation otherwise. */
+    static String queryText(String input){String q=input.trim(),digits=q.replaceFirst("(?i)^isbn(?:-1[03])?\\s*:?\\s*","").replaceAll("[\\s-]","");return digits.matches("(?:[0-9]{13}|[0-9]{9}[0-9Xx])")?digits:q;}
+    private JSONArray googleSearch(String encoded) throws Exception {
+        String url="https://www.googleapis.com/books/v1/volumes?q="+encoded+"&maxResults=16&printType=books";
+        JSONArray books=google(new JSONObject(fetch.get(url+"&langRestrict=tr")));
+        // Some Turkish editions have missing/wrong language metadata. Retry empty results, never quota errors.
+        return books.length()>0?books:google(new JSONObject(fetch.get(url)));
+    }
+    /** Public book-category search cards, not the marketplace seller API. Never infer author/ISBN/pages from a brand or range. */
+    private static boolean bundle(String text){return fold(text).matches(".*\\b(?:set|seti|setli|kitaplik|kutulu|[0-9]+\\s*(?:li|lu|kitap))\\b.*");}
+    public static JSONArray trendyol(String html,String query) throws JSONException {
+        Document document=Jsoup.parse(html,"https://www.trendyol.com/");JSONArray books=new JSONArray();Set<String> seen=new HashSet<>();
+        for(Element card:document.select("a[data-testid=product-card]")){
+            Element name=card.selectFirst(".product-name"),image=card.selectFirst("img[data-testid=image-img]");if(name==null)continue;
+            String title=name.text(),url=card.absUrl("href"),text=fold(title+" "+card.select(".product-brand").text());
+            if(bundle(title)&&!bundle(query))continue;
+            if(!url.matches("https://www\\.trendyol\\.com/[^?#]*-p-[0-9]+(?:[?#].*)?")||!seen.add(fold(title)))continue;
+            boolean match=queryText(query).matches("[0-9Xx]{10,13}");
+            if(!match){match=true;for(String term:fold(query).split("\\s+"))if(!text.contains(term)){match=false;break;}}
+            if(!match)continue;
+            String cover=image==null?"":image.absUrl("src");if(!cover.startsWith("https://"))cover="";
+            books.put(new JSONObject().put("title",title).put("author","").put("isbn","").put("totalPages",0).put("cover",cover).put("source","Trendyol · kitap ilanı").put("sourceUrl",url).put("buyUrl",url).put("store","Trendyol"));
+            if(books.length()>=16)break;
+        }
+        return books;
+    }
     private static int rank(JSONObject b,String q){String query=fold(q),title=fold(b.optString("title"));return b.optString("isbn").equals(q)||title.equals(query)?100:title.startsWith(query)?60:title.contains(query)?40:20;}
     private static void add(JSONArray out,Set<String> seen,JSONObject b) throws JSONException {
         if(b.optString("title").trim().isEmpty())return;
+        if(b.optString("cover").startsWith("/")&&b.optString("sourceUrl").startsWith("https://"))try{b=new JSONObject(b.toString()).put("cover",java.net.URI.create(b.optString("sourceUrl")).resolve(b.optString("cover")).toString());}catch(Exception ignored){}
         String isbn=b.optString("isbn").replaceAll("[^0-9Xx]","");String key=isbn.isEmpty()?fold(b.optString("title"))+"|"+fold(b.optString("author")):isbn;
         if(seen.add(key))out.put(b);
     }
