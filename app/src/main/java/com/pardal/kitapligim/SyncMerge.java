@@ -8,7 +8,8 @@ public final class SyncMerge {
         if (local == null) return synced(remote, remote);
         boolean dirty = !"synced".equals(local.optString("syncStatus"));
         boolean changed = !local.optString("remoteEditedAt").equals(remote.optString("remoteEditedAt"));
-        if (!dirty || Book.same(local, remote)) return synced(local, remote);
+        JSONObject l=Book.copy(local),r=Book.copy(remote);l.remove("readingDays");r.remove("readingDays");
+        if (!dirty || Book.same(local, remote) || Book.same(l,r)) return synced(local, remote);
         if (!changed) { JSONObject b=Book.copy(local); b.put("remotePageId", remote.optString("remotePageId")); return b; }
         JSONObject result=Book.copy(local);
         result.put("syncStatus", "conflict").put("conflictRemote", remote);
@@ -24,6 +25,10 @@ public final class SyncMerge {
         // Notion does not keep passage ids or dates; keep the phone's when the passage is unchanged.
         else if (result.has("highlights") && local.has("highlights") && Book.highlightKey(result.optJSONArray("highlights")).equals(Book.highlightKey(local.optJSONArray("highlights")))) result.put("highlights", local.get("highlights"));
         result.put("syncStatus", "synced"); result.remove("conflictRemote");
+        if(local.has("readingDays")||remote.has("readingDays")){
+            JSONArray rows=ReadingProgress.merge(local.optJSONArray("readingDays"),remote.optJSONArray("readingDays"));result.put("readingDays",rows);
+            if(remote.has("readingDays")&&!ReadingProgress.key(rows).equals(ReadingProgress.key(remote.getJSONArray("readingDays"))))result.put("syncStatus","pending");
+        }
         return result;
     }
     public static JSONObject resolve(JSONObject local, boolean useRemote) throws JSONException {

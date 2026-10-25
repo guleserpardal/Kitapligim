@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
                     case "state":ready=true;result=state();queueSync();break;
                     case "save":AppRuntime.store(MainActivity.this).save(p);result=state();queueSync();break;
                     case "delete":AppRuntime.store(MainActivity.this).delete(p.getString("id"));result=state();queueSync();break;
-                    case "settings":AppRuntime.store(MainActivity.this).settings(p);result=state();break;
+                    case "settings":AppRuntime.store(MainActivity.this).settings(p);result=state();if(p.has("dailyGoal"))queueSync();break;
                     case "resolve":{BookStore st=AppRuntime.store(MainActivity.this);JSONObject local=st.book(p.getString("id"));if(local==null)throw new Exception("Kitap bulunamadı.");st.put(SyncMerge.resolve(local,p.getBoolean("remote")));result=state();queueSync();break;}
                     case "search":result=search(p.getString("q"));break;
                     case "connect":{String token=p.getString("token").trim();if(token.isEmpty())throw new Exception("Notion bağlantı anahtarını gir.");new NotionSync(AppRuntime.store(MainActivity.this),token,AppRuntime.covers(MainActivity.this)).check();new Credentials(MainActivity.this).save(token);result=state();queueSync();break;}

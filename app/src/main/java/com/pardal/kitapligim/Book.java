@@ -40,6 +40,7 @@ public final class Book {
             b.put("buyUrl", url);
         }
         if (b.has("highlights")) b.put("highlights", highlights(b.optJSONArray("highlights")));
+        if (b.has("readingDays")) b.put("readingDays",ReadingProgress.normalize(b.getJSONArray("readingDays")));
         return b;
     }
     public static JSONArray highlights(JSONArray input) throws JSONException {
@@ -69,6 +70,7 @@ public final class Book {
         for (String key : FIELDS) if (!Objects.equals(a.opt(key), b.opt(key))) return false;
         for (String key : PURCHASE) if (a.has(key) && b.has(key) && !a.optString(key).equals(b.optString(key))) return false;
         if (a.has("highlights") && b.has("highlights") && !highlightKey(a.optJSONArray("highlights")).equals(highlightKey(b.optJSONArray("highlights")))) return false;
+        try {if(a.has("readingDays")&&b.has("readingDays")&&!ReadingProgress.key(a.optJSONArray("readingDays")).equals(ReadingProgress.key(b.optJSONArray("readingDays"))))return false;}catch(JSONException e){return false;}
         return true;
     }
     public static String statusName(String id) { return switch (id) { case "reading" -> "Okuyorum"; case "done" -> "Okudum"; case "paused" -> "Ara verdim"; default -> "Okuyacağım"; }; }

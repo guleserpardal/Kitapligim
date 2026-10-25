@@ -5,7 +5,7 @@ import java.util.*;
 
 public final class NotionCodec {
     /** Columns added after the first release; a table without them still syncs everything else. */
-    public static final List<String> OPTIONAL_COLUMNS = List.of("Fiyat","Mağaza","Satın Alma Linki","Altı Çizilenler");
+    public static final List<String> OPTIONAL_COLUMNS = List.of("Fiyat","Mağaza","Satın Alma Linki","Altı Çizilenler",ReadingProgress.COLUMN);
     private static JSONObject value(String k, Object v) throws JSONException { return new JSONObject().put(k, v); }
     private static JSONArray rich(String s) throws JSONException {
         JSONArray r=new JSONArray();
@@ -59,6 +59,7 @@ public final class NotionCodec {
         p.put("Mağaza",value("rich_text",rich(b.optString("store"))));
         p.put("Satın Alma Linki",value("url",b.optString("buyUrl").isEmpty()?JSONObject.NULL:b.getString("buyUrl")));
         p.put("Altı Çizilenler",value("rich_text",rich(highlightText(b.optJSONArray("highlights")))));
+        if(b.has("readingDays"))p.put(ReadingProgress.COLUMN,value("rich_text",rich(ReadingProgress.encode(b.getJSONArray("readingDays")))));
         return p;
     }
     public static JSONObject fromPage(JSONObject page) throws JSONException {
@@ -75,6 +76,7 @@ public final class NotionCodec {
         if(p.has("Mağaza"))b.put("store",text(p,"Mağaza","rich_text"));
         if(p.has("Satın Alma Linki"))b.put("buyUrl",url(p,"Satın Alma Linki"));
         if(p.has("Altı Çizilenler"))b.put("highlights",parseHighlights(text(p,"Altı Çizilenler","rich_text")));
+        if(p.has(ReadingProgress.COLUMN))b.put("readingDays",ReadingProgress.decode(text(p,ReadingProgress.COLUMN,"rich_text")));
         boolean deleted=page.optBoolean("archived")||page.optBoolean("is_archived")||page.optBoolean("in_trash")||(p.optJSONObject("Silindi")!=null && p.getJSONObject("Silindi").optBoolean("checkbox"));
         b.put("deleted",deleted).put("remotePageId",page.getString("id")).put("remoteEditedAt",page.getString("last_edited_time")).put("updatedAt",page.getString("last_edited_time")).put("syncStatus","synced");
         JSONArray photos=p.optJSONObject("Kapak Fotoğrafı")==null?null:p.getJSONObject("Kapak Fotoğrafı").optJSONArray("files");

@@ -6,6 +6,17 @@ Güleser, İlker, Elis ve Lila için krem ve zeytin tonlarında kişisel Android
 
 Bu depo Kitaplığım uygulamasının kaynak kodunu içerir. GitHub'a yükleme adımları `GITHUB.md`, derleme ayrıntıları `GELISTIRME.md` dosyasındadır. İmza anahtarları ve parolalar pakete dahil edilmemiştir. Java 17 ve Android SDK 35 ile Android Studio'da açılabilir; imza anahtarı olmadan debug APK derlenebilir.
 
+## 1.4.0 — Günlük okuma hedefi ve zincir
+
+- Her profil için günlük sayfa hedefi. Ana sayfadaki **Bugünkü okuman** kartından hedefini seç; 10, 20, 30 sayfalık kısayollar veya kendi sayını kullan.
+- Kitap detayında kaldığın sayfayı kaydettiğinde okuduğun fark güne eklenir. Birden fazla kitaptaki okumalar toplanır. Aynı sayfayı yeniden kaydetmek veya yalnız not düzenlemek tekrar sayılmaz.
+- Geriye yapılan sayfa düzeltmesi bugünkü kaydı düzeltir. Önceki kayıtlı sayfalar ve yeni eklenen bir kitabın eski ilerlemesi bugüne yazılmaz. Sadece rafı “Okudum” yapmak otomatik okuma kredisi oluşturmaz.
+- **Hedefler → Okuma zincirim**: aylık takvim, seçilen günün sayfası/hedefi, mevcut ve en uzun zincir. Yeşil gün hedefi tamamladığın, açık sarı gün biraz okuduğun gündür. Gelecek günler seçilemez.
+- Zincir, günlük hedefin tamamlandığı ardışık günlerden oluşur. Bugün henüz bitmediyse dünkü zincir gün sonuna kadar görünür. Hedef değişikliği bugüne ve sonraki okumalara uygulanır; geçmiş hedefleri değiştirmez.
+- Okuma günlüğü ve hedefler cihazda, internet olmadan kaydedilir. Bağlı Notion kitaplığında uygulama **Okuma Günlüğü** metin alanını ekleyip kitap başına günlük kayıtları eşitler. Alan ekleme yetkisi yoksa günlük telefonda korunur ve Ayarlar'da açık uyarı gösterilir. Normal kitap eşitlemesi devam eder. Gerçek hesapla canlı doğrulama telefonda yapılmalıdır.
+- Takvim, uygulamanın sayfa kaydetme işlemlerini izler; Notion'da yalnız Kaldığım Sayfa alanını elle değiştirmek kendiliğinden okuma günü oluşturmaz. Günlük hedef cihazda profil bazında saklanır; diğer cihazda ilk hedef ayrıca seçilebilir, eşitlenen günlerdeki hedefler geçmişte korunur.
+- `versionName 1.4.0`, `versionCode 6`. Önceki imzayla güncelleme olarak kurulabilir.
+
 ## 1.3.0 — Kendi kitap köşen
 
 - Ana sayfa sıcak krem tonlarında, ahşap raf çizgileri ve kapaklarla yeniden düzenlendi. Okumaya devam et, Sıradaki kitaplar, Bitirdiğim kitaplar ve **Ara verdiklerim** aynı sayfada yer alır.
@@ -37,7 +48,7 @@ Bu depo Kitaplığım uygulamasının kaynak kodunu içerir. GitHub'a yükleme a
 
 ## Telefona kurulum
 
-1. Güncel `Kitapligim-1.3.0.apk` dosyasını telefona indirip aç.
+1. Güncel `Kitapligim-1.4.0.apk` dosyasını telefona indirip aç.
 2. Android isterse dosyayı açtığın uygulama için “Bu kaynaktan yüklemeye izin ver” seçeneğini aç; ardından Yükle'ye dokun.
 3. Kitaplığım'ı aç ve üstteki dört profilden birini seç.
 

@@ -17,6 +17,12 @@ public final class NotionSync {
         if(token.isEmpty())return;
         // Purchase columns were added later; families whose table lacks them keep syncing everything else.
         JSONObject columns=call("GET","/data_sources/"+BookStore.DATA_SOURCE,null).getJSONObject("properties");
+        if(!columns.has(ReadingProgress.COLUMN)){
+            boolean hasHistory=false;JSONArray books=store.state().getJSONArray("books");for(int i=0;i<books.length();i++)if(books.getJSONObject(i).optJSONArray("readingDays")!=null&&books.getJSONObject(i).getJSONArray("readingDays").length()>0){hasHistory=true;break;}
+            if(hasHistory)try{columns=call("PATCH","/data_sources/"+BookStore.DATA_SOURCE,new JSONObject().put("properties",new JSONObject().put(ReadingProgress.COLUMN,new JSONObject().put("rich_text",new JSONObject())))).getJSONObject("properties");}
+            catch(Http.Failure e){if(e.status!=400&&e.status!=403)throw e;store.readingSyncWarning("Okuma geçmişi telefonda kayıtlı. Notion'da 'Okuma Günlüğü' adlı metin alanı eklenemedi; bağlantının düzenleme yetkisini kontrol et.");}
+        }
+        if(columns.has(ReadingProgress.COLUMN)){if(!"rich_text".equals(columns.getJSONObject(ReadingProgress.COLUMN).optString("type")))throw new Exception("Notion'daki Okuma Günlüğü alanı metin (rich text) türünde olmalı.");store.readingSyncWarning("");}
         Map<String,JSONObject> remote=new LinkedHashMap<>();String cursor="";int count=0;
         do {JSONObject q=new JSONObject().put("page_size",100);if(!cursor.isEmpty())q.put("start_cursor",cursor);JSONObject result=call("POST","/data_sources/"+BookStore.DATA_SOURCE+"/query",q);JSONArray pages=result.getJSONArray("results");for(int i=0;i<pages.length();i++){JSONObject page=pages.getJSONObject(i);JSONObject b=NotionCodec.fromPage(page);String id=b.getString("id");if(remote.containsKey(id))throw new Exception("Notion'da aynı Uygulama ID ile iki kayıt var. Yinelenen satırı kontrol et.");remote.put(id,b);}cursor=result.optBoolean("has_more")?result.optString("next_cursor",""):"";if(++count>100)throw new Exception("Kitaplık çok büyük; eşitleme tamamlanmadı.");}while(!cursor.isEmpty());
         JSONArray local=store.state().getJSONArray("books");Set<String> seenPages=new HashSet<>();for(JSONObject b:remote.values())seenPages.add(b.optString("remotePageId"));

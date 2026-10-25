@@ -6,7 +6,7 @@ Bu kaynak paketi Android Studio'da açılabilen bağımsız bir Gradle projesidi
 - Gradle Wrapper 8.9, Android Gradle Plugin 8.7.3.
 - En düşük Android sürümü: 11 / API 30. Hedef API 35.
 - ABI'ler: arm64-v8a (teslim edilen telefon APK'sı), x86_64 (emülatör).
-- Uygulama kimliği: `com.pardal.kitapligim`, sürüm: `1.3.0` / kod `5`.
+- Uygulama kimliği: `com.pardal.kitapligim`, sürüm: `1.4.0` / kod `6`.
 - Yerel HTML/CSS/JavaScript ekranları Android WebViewAssetLoader ile güvenli yerel HTTPS kökeninden sunulur. Ağ araması, OCR, kamera, disk, Android Keystore ve Notion bağlantısı Java katmanındadır. Web sitesi veya kurulum bağlantısı gerektirmez.
 - Kitaplar `AtomicFile` ile uygulamanın özel alanına yazılır. Tüm yerel yazmalar ve eşitleme tek iş parçacıklı yürütücüden geçer.
 - Notion REST sürümü: 2025-09-03; tek aile veri kaynağı: `a77420e6-f540-49a2-84c0-45c3bffa711a`.
@@ -67,3 +67,18 @@ npm run test:ui
 ```
 
 Test yerel bir HTTP sunucusu açıp kapatır; örnek verileri yalnız tarayıcının test bağlamında tutar, gerçek Notion/kamera servisini çağırmaz. Dört rafı, listelerin tamamını, aramayı, profil ayrımını, kaydedilen notu, ara verilen kitabın ilerlemesini, beş ekleme seçeneğini, geri tuşunu ve dar ekranları kontrol eder. `test-results/` görselleri Git dışında tutulur. Farklı bir Chromium ikilisi için `PLAYWRIGHT_CHROMIUM_EXECUTABLE` ortam değişkeni kullanılabilir.
+
+## 1.4.0 günlük kayıt modeli
+
+`ReadingProgress` telefonun yerel gününde, kitap/profil/tarih başına tek düzeltilebilir kayıt tutar. İlk kaydın `start` değeri önceki sayfadır; `end` son kaydedilen sayfadır. Günlük katkı `max(0, end-start)` değeridir. `_recordReading` yalnız açık sayfa düzenlemelerinde kullanılır ve saklanmaz. Yeni kitap/eski ilerleme başlangıç sayılır. Raf/Notion kaynaklı otomatik konum değişimi varsa o günün başlangıcı yeniden hizalanır; sonraki güncellemede aradaki otomatik fark okuma sayılmaz.
+
+Kayıt tarihleri kaydedildikleri yerel gün olarak korunur; takvim gün aritmetiği UTC öğlenle yapılır. Aynı gün tekrar kaydetme, sayfa düzeltme, gün değişimi, profil aktarımı ve silinen kitapların geçmişi testlidir. Bir kitabın günlük kaydı iki kaynaktan gelirse tarih/profil anahtarıyla tekilleştirilir ve son düzenlenen kayıt korunur. Çevrimdışı iki cihazın aynı kitabı aynı gün eşzamanlı düzenlemesinde son kayıt esas alınır; bu kayıtlar toplanarak iki kez sayılmaz.
+
+`dailyGoals` cihazda profil bazlıdır; günlük kayıttaki `goal` o günün hedefini taşır. Bugünkü hedef düzenlenebilir; geçmiş satırların hedefi değiştirilmez. Okuma günlüğü `Okuma Günlüğü` adlı rich_text sütununda sürümlenebilir kompakt JSON satırları olarak tutulur (tarih, profil indeksi, başlangıç, bitiş, hedef, düzenleme zamanı). Mevcut sayfa bloklarına ve eski alanlara dokunulmaz. Yeni sütun eksikse yalnız geçmiş olduğunda eklenir; yetki hatası normal kitap senkronunu durdurmadan görünür uyarı olur. Boş/eski bir Notion günlüğü telefondaki günleri silemez.
+
+```sh
+npm test                 # sayfa hesabı, zincir, takvim tarihi ve hedef kuralları
+npm run test:ui         # ana sayfa ve günlük hedef/takvim akışları
+```
+
+`ReadingProgressTest` Notion dönüşümünü ve günlük kayıt birleştirmesini de test eder. Notion'un canlı hesabı, cihaz kamerası ve Android kurulum ekranı bu tarayıcı testlerinin kapsamında değildir.

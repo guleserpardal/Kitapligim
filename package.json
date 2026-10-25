@@ -1,6 +1,6 @@
 {
   "name": "kitapligim-ui-checks",
   "private": true,
-  "scripts": { "test:ui": "node tests/home-ui.cjs" },
+  "scripts": { "test": "node --test tests/reading.test.cjs", "test:ui": "node tests/home-ui.cjs && node tests/daily-ui.cjs" },
   "devDependencies": { "playwright": "1.62.1" }
 }
