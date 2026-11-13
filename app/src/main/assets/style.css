@@ -532,3 +532,8 @@ body.typing .quick-add{display:none}
 @media(max-width:359px){.home-library,.shelf-page{padding-left:16px;padding-right:16px}.library-section-head h2{font-size:21px}.shelf-see-all{font-size:11px}.reading-feature{gap:13px}.feature-pages{margin-top:13px}.feature-update{font-size:12px;padding:9px 6px;gap:4px}.feature-author{font-size:13px}.annual-strip{gap:8px;padding:12px 9px}.annual-strip>span{font-size:14px}.annual-strip>strong{font-size:11px}.bookcase-rail{margin-left:-16px;margin-right:-16px;padding-left:20px}.nav-item{min-width:60px}}
 
 .catalog-search-link{margin:12px 0 4px;max-width:100%;white-space:normal}.rec .catalog-search-link{display:flex;margin:8px 0}
+
+.year-filter { margin: 0 0 14px; }
+.year-filter select { width: 100%; padding: 12px; border: 1px solid #ded5c6; border-radius: 12px; background: #fffdf8; color: #35352f; font: inherit; }
+.plan-year-field { margin: 18px 0; }
+.plan-year-field small { display: block; margin-top: 6px; color: #777467; }

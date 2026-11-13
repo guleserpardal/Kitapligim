@@ -25,7 +25,7 @@ async function openMenu(page){await page.locator('#quick-add-toggle').click();aw
 (async()=>{
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port;
   browser=await chromium.launch({headless:true,executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE||undefined});const context=await browser.newContext({viewport:{width:390,height:844}});
-  await context.addInitScript(s=>localStorage.setItem('kitapligim-preview',JSON.stringify(s)),state);
+  await context.addInitScript(s=>{if(!localStorage.getItem('kitapligim-preview'))localStorage.setItem('kitapligim-preview',JSON.stringify(s))},state);
   await context.route('https://covers.test/**',r=>r.fulfill({contentType:'image/svg+xml',body:`<svg xmlns="http://www.w3.org/2000/svg" width="260" height="390"><rect width="260" height="390" fill="${r.request().url().includes('reading')?'#325d58':'#ddc595'}"/><rect x="12" y="12" width="236" height="366" rx="3" fill="none" stroke="#d2be8a"/><path d="M40 310Q150 230 210 110M72 275l-12-45m62-6 40-10m-15-37-2-43" fill="none" stroke="#b4bd88" stroke-width="3"/><text x="130" y="62" text-anchor="middle" fill="#fff9e7" font-family="serif" font-size="29">${r.request().url().includes('reading')?'Huşu Ağacı':'Kitap köşesi'}</text><text x="130" y="90" text-anchor="middle" fill="#fff9e7" font-family="serif" font-size="16">Örnek kapak</text></svg>`}));
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(url);
   await page.locator('.home-library').waitFor();assert.equal(await page.locator('[data-home-shelf]').count(),4);
@@ -40,6 +40,21 @@ async function openMenu(page){await page.locator('#quick-add-toggle').click();aw
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,'home-390.png'),fullPage:true});
   await page.locator('[data-home-shelf="want"] [data-action="view-shelf"]').click();await page.locator('.shelf-page').waitFor();
   assert.equal(await page.locator('.book-row').count(),8,'Full shelf must include books beyond home preview');
+  await page.getByText('Şeker Portakalı',{exact:true}).click();
+  await page.getByRole('button',{name:'Diğer işlemler'}).click();
+  await page.getByRole('button',{name:'Bilgileri düzenle'}).click();
+  await page.locator('#edit-form [name=plannedYear]').fill('2027');
+  await page.locator('[data-action=save-edit]').click();
+  await page.getByRole('button',{name:'Geri'}).click();
+  await page.locator('#planned-year-filter').selectOption('2027');
+  assert.equal(await page.locator('.book-row').count(),1,'Only the planned book appears in 2027');
+  await page.reload();
+  await page.locator('[data-home-shelf="want"] [data-action="view-shelf"]').click();
+  await page.locator('#planned-year-filter').selectOption('2027');
+  assert.equal(await page.locator('.book-row').count(),1,'Plan survives a reload');
+  await page.locator('#planned-year-filter').selectOption('none');
+  assert.equal(await page.locator('.book-row').count(),7,'Older books remain visible without a year');
+  await page.locator('#planned-year-filter').selectOption('all');
   await page.getByRole('textbox',{name:'Bu rafta ara'}).fill('kitap 7');await page.locator('#library-search').evaluate(f=>f.requestSubmit());
   assert.equal(await page.locator('.book-row').count(),1);await page.locator('.book-row').click();await page.locator('#notes-input').fill('Kaydedilen okuma notu');await page.getByRole('button',{name:'Değişiklikleri kaydet',exact:true}).click();
   await page.locator('[data-action="back"]').click();await page.locator('.shelf-page').waitFor();assert.equal(await page.getByRole('textbox',{name:'Bu rafta ara'}).inputValue(),'kitap 7');

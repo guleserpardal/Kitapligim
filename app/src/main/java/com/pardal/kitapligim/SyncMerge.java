@@ -20,6 +20,8 @@ public final class SyncMerge {
         result.put("id", local.optString("id", remote.optString("id")));
         if (!local.optString("localCover").isEmpty()) result.put("localCover", local.optString("localCover"));
         // A Notion table without the newer columns must not erase what was saved on the phone.
+        // Reading plans are stored on this device and must survive Notion refreshes.
+        if (local.has("plannedYear")) result.put("plannedYear", local.get("plannedYear"));
         for (String key : Book.PURCHASE) if (!result.has(key) && local.has(key)) result.put(key, local.get(key));
         if (!result.has("highlights") && local.has("highlights")) result.put("highlights", local.get("highlights"));
         // Notion does not keep passage ids or dates; keep the phone's when the passage is unchanged.
