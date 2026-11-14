@@ -32,6 +32,8 @@ public class MainActivity extends Activity {
     private boolean ready;
     private ScheduledFuture<?> pendingSync;
     private StoreScraper scraper;
+    private String reminderRequest;
+    private JSONObject reminderPending;
     private static final String ORIGIN="https://appassets.androidplatform.net";
     @Override public void onCreate(Bundle state){
         super.onCreate(state);
@@ -56,18 +58,19 @@ public class MainActivity extends Activity {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view,WebResourceRequest request){WebResourceResponse local=loader.shouldInterceptRequest(request.getUrl());if(local!=null)return local;String host=request.getUrl().getHost();if(!request.isForMainFrame()&&"https".equals(request.getUrl().getScheme())&&!ORIGIN.equals(request.getUrl().getScheme()+"://"+host))return null;return new WebResourceResponse("text/plain","UTF-8",403,"Blocked",Map.of(),new ByteArrayInputStream(new byte[0]));}
             @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest r){return true;}
         });
-        web.addJavascriptInterface(new Bridge(),"Android");web.loadUrl(ORIGIN+"/assets/index.html");AppRuntime.schedule(this);
+        web.addJavascriptInterface(new Bridge(),"Android");web.loadUrl(ORIGIN+"/assets/index.html");AppRuntime.schedule(this);ReadingReminder.schedule(this);
     }
-    @Override public void onResume(){super.onResume();if(ready)queueSync();}
+    @Override public void onResume(){super.onResume();ReadingReminder.schedule(this);if(ready){queueSync();AppRuntime.EXEC.execute(()->emitState());}}
     @Override public void onBackPressed(){web.evaluateJavascript("window.onNativeBack&&window.onNativeBack()",value->{if(!"true".equals(value))super.onBackPressed();});}
     private void reply(String id,Object value,String error){if(isFinishing()||isDestroyed())return;runOnUiThread(()->web.evaluateJavascript("window.nativeResult("+JSONObject.quote(id)+","+(value==null?"null":value.toString())+","+(error==null?"null":JSONObject.quote(error))+")",null));}
-    private JSONObject state() throws Exception {JSONObject d=AppRuntime.store(this).state();d.put("connected",!new Credentials(this).get().isEmpty());JSONObject as;try{as=assistant().summary();}catch(Exception e){as=new JSONObject().put("configured",false);}d.put("assistant",as);d.put("platform","android");return d;}
+    private JSONObject state() throws Exception {JSONObject d=AppRuntime.store(this).state();d.put("reminder",ReadingReminder.state(this));d.put("connected",!new Credentials(this).get().isEmpty());JSONObject as;try{as=assistant().summary();}catch(Exception e){as=new JSONObject().put("configured",false);}d.put("assistant",as);d.put("platform","android");return d;}
     private Assistant assistant(){return new Assistant(new Credentials(this,"assistant","kitapligim-assistant"));}
     private void emitState(){if(!ready||isFinishing()||isDestroyed())return;try{String js=state().toString();runOnUiThread(()->web.evaluateJavascript("window.receiveState("+js+")",null));}catch(Exception ignored){}}
     private void queueSync(){if(pendingSync!=null)pendingSync.cancel(false);pendingSync=AppRuntime.EXEC.schedule(()->{try{AppRuntime.sync(this);}catch(Exception ignored){}emitState();},2,TimeUnit.SECONDS);}
     final class Bridge {
         @JavascriptInterface public void request(String id,String action,String payload){
             if(action.equals("photo")){runOnUiThread(()->selectPhoto(id,payload));return;}
+            if(action.equals("reminderSave")){runOnUiThread(()->saveReminder(id,payload));return;}
             // Price lookups use their own threads so slow shops never delay saving or syncing.
             if(action.equals("shopPrices")){runOnUiThread(()->{try{if(scraper==null)scraper=new StoreScraper(MainActivity.this);JSONObject p=new JSONObject(payload);String isbn=p.optString("isbn").replaceAll("[^0-9Xx]","");String q=isbn.length()==10||isbn.length()==13?isbn:(p.optString("title")+" "+p.optString("author")).trim();if(q.isEmpty()){reply(id,new JSONArray(),null);return;}scraper.prices(q,offers->reply(id,offers,null));}catch(Exception e){reply(id,null,"Mağaza fiyatları alınamadı.");}});return;}
             if(action.equals("offers")){OFFERS.execute(()->{try{reply(id,offers(new JSONObject(payload).getJSONArray("books")),null);}catch(Exception e){reply(id,null,"Fiyat bilgisi alınamadı.");}});return;}
@@ -84,6 +87,8 @@ public class MainActivity extends Activity {
                     case "assistantTest":result=assistant().test();break;
                     case "assistantClear":assistant().clear();result=state();break;
                     case "chat":result=assistant().chat(p);break;
+                    case "reminderTest":ReadingReminder.notify(MainActivity.this,true);result=new JSONObject().put("ok",true);break;
+                    case "reminderSettings":runOnUiThread(()->startActivity(new Intent(android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE,getPackageName()).putExtra(android.provider.Settings.EXTRA_CHANNEL_ID,ReadingReminder.CHANNEL)));result=new JSONObject();break;
                     case "disconnect":new Credentials(MainActivity.this).clear();result=state();break;
                     case "sync":AppRuntime.sync(MainActivity.this);result=state();break;
                     case "export":{JSONObject data=AppRuntime.store(MainActivity.this).state();File dir=new File(getCacheDir(),"exports");dir.mkdirs();File f=new File(dir,"Kitapligim-"+java.time.LocalDate.now()+".json");try(FileWriter out=new FileWriter(f)){out.write(data.toString(2));}Uri uri=FileProvider.getUriForFile(MainActivity.this,getPackageName()+".files",f);runOnUiThread(()->{Intent share=new Intent(Intent.ACTION_SEND).setType("application/json").putExtra(Intent.EXTRA_STREAM,uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);startActivity(Intent.createChooser(share,"Kitaplık bilgilerini dışa aktar"));});result=new JSONObject().put("ok",true);break;}
@@ -94,6 +99,21 @@ public class MainActivity extends Activity {
                 reply(id,result,null);
             }catch(Exception e){String msg=e.getMessage();if(e instanceof java.net.UnknownHostException||e instanceof java.net.SocketTimeoutException)msg="İnternet bağlantısını kontrol edip yeniden dene. Kayıtların telefonda duruyor.";reply(id,null,msg==null?"İşlem tamamlanamadı.":msg);}});
         }
+    }
+    private void saveReminder(String id,String payload){
+        try{JSONObject p=new JSONObject(payload);
+            if(p.getBoolean("enabled")&&!ReadingReminder.permission(this)){
+                if(reminderRequest!=null)throw new IllegalStateException("Bildirim izni yanıtını bekle.");
+                reminderRequest=id;reminderPending=p;requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},73);return;
+            }
+            ReadingReminder.save(this,p);AppRuntime.EXEC.execute(()->{try{reply(id,state(),null);}catch(Exception e){reply(id,null,e.getMessage());}});
+        }catch(Exception e){reply(id,null,e.getMessage());}
+    }
+    @Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] results){
+        super.onRequestPermissionsResult(requestCode,permissions,results);if(requestCode!=73)return;
+        String id=reminderRequest;JSONObject p=reminderPending;reminderRequest=null;reminderPending=null;if(id==null||p==null)return;
+        if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)saveReminder(id,p.toString());
+        else reply(id,null,"Bildirim izni verilmedi. Hatırlatmayı açmak için telefonun bildirim ayarlarından Kitaplığım’a izin ver.");
     }
     private JSONArray search(String query) throws Exception {
         JSONArray catalog;

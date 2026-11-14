@@ -39,7 +39,7 @@ public final class Book {
             if (!url.isEmpty() && (!url.startsWith("https://") || url.length() > 2000)) throw new IllegalArgumentException("Satın alma linki https ile başlamalı.");
             b.put("buyUrl", url);
         }
-        if (b.has("plannedYear") && !b.isNull("plannedYear")) { int year=b.optInt("plannedYear", -1); if(year<1900||year>9999) throw new IllegalArgumentException("Geçerli bir okuma yılı gir."); b.put("plannedYear",year); }
+        if (b.has("plannedYear") && !b.isNull("plannedYear")) { double year=b.optDouble("plannedYear",Double.NaN); if(!Double.isFinite(year)||year!=Math.floor(year)||year<1900||year>9999) throw new IllegalArgumentException("Geçerli bir okuma yılı gir."); b.put("plannedYear",(int)year); }
         if (b.has("highlights")) b.put("highlights", highlights(b.optJSONArray("highlights")));
         if (b.has("readingDays")) b.put("readingDays",ReadingProgress.normalize(b.getJSONArray("readingDays")));
         return b;

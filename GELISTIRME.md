@@ -6,7 +6,7 @@ Bu kaynak paketi Android Studio'da açılabilen bağımsız bir Gradle projesidi
 - Gradle Wrapper 8.9, Android Gradle Plugin 8.7.3.
 - En düşük Android sürümü: 11 / API 30. Hedef API 35.
 - ABI'ler: arm64-v8a (teslim edilen telefon APK'sı), x86_64 (emülatör).
-- Uygulama kimliği: `com.pardal.kitapligim`, sürüm: `1.4.1` / kod `7`.
+- Uygulama kimliği: `com.pardal.kitapligim`, sürüm: `1.5.0` / kod `8`.
 - Yerel HTML/CSS/JavaScript ekranları Android WebViewAssetLoader ile güvenli yerel HTTPS kökeninden sunulur. Ağ araması, OCR, kamera, disk, Android Keystore ve Notion bağlantısı Java katmanındadır. Web sitesi veya kurulum bağlantısı gerektirmez.
 - Kitaplar `AtomicFile` ile uygulamanın özel alanına yazılır. Tüm yerel yazmalar ve eşitleme tek iş parçacıklı yürütücüden geçer.
 - Notion REST sürümü: 2025-09-03; tek aile veri kaynağı: `a77420e6-f540-49a2-84c0-45c3bffa711a`.
@@ -90,3 +90,11 @@ npm run test:ui         # ana sayfa ve günlük hedef/takvim akışları
 ```
 
 `ReadingProgressTest` Notion dönüşümünü ve günlük kayıt birleştirmesini de test eder. Notion'un canlı hesabı, cihaz kamerası ve Android kurulum ekranı bu tarayıcı testlerinin kapsamında değildir.
+
+## 1.5.0 okuma planı ve hatırlatma
+
+`codex/okuma-plani-yili` dalındaki `plannedYear` alanı ve raf filtresi korunmuştur. Hedefler ekranında yıl bazlı plan, mevcut kitap seçici ve yeni kitap akışına plan yılı aktarımı eklenmiştir. Alan opsiyoneldir; 1900–9999 arasında tam sayı veya temizlemek için null kabul edilir. `SyncMerge` yerel plan alanını Notion yenilemelerinde ve uzak sürüm seçiminde korur. Alan JSON dışa aktarmaya dahildir, Notion'a gönderilmez. Bir kitap tek yıl planına aittir.
+
+`ReadingReminder` SharedPreferences içinde cihaz bazlı aç/kapat ve saat/dakika tutar. Varsayılan kapalıdır; açma akışı Android 13+ `POST_NOTIFICATIONS` iznini ister. Kanal kapalıysa arayüz telefon ayarlarına bağlantı gösterir. `setAndAllowWhileIdle` ile yaklaşık saatte çalışan tek alarm kurulur; alıcı ertesi günü tekrar planlar. Tam zamanlı alarm izni, FCM, sunucu veya sürekli servis kullanılmaz. BOOT_COMPLETED, MY_PACKAGE_REPLACED, TIME_SET ve TIMEZONE_CHANGED olaylarında yeniden planlanır. Eski akşamın bildirimi ertesi sabah gösterilmez; günde tek hatırlatma vardır. Test bildirimi günlük kaydı etkilemez. Reddedilen izin hatırlatmanın aktif olduğu gibi gösterilmez.
+
+`ReadingPlanTest` opsiyonel alan, kayıt roundtrip'i, geçersiz yıl, Notion yenilemesi ve çakışma seçimini; `ReminderTimeTest` gece 23:00, ertesi gün/yıl, zaman dilimi, yaz saati ve eski alarm durumlarını test eder. 63 Android birim testi, 13 okuma mantığı testi ve 20 sunucu testi geçti; release derlemesi ve lint geçti (engelleyici hata yok). Gerçek app.js ile DOM ortamında yıl/profil listeleri, ekle/çıkar, not/sayfa koruma, yeni kitaba yıl aktarımı, hatırlatma saati/kapatma ve JSON yeniden yükleme akışları da geçti. Bu ortamda Chromium çöktüğü için standart Playwright ekran ve dar görünüm kontrolleri tamamlanamadı; gerçek telefonun izin ekranı ve sistem bildirimi ayrıca telefonda denenmelidir. Yeni akışlar `tests/plan-reminder-ui.cjs` içine eklenmiştir.

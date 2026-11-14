@@ -6,6 +6,16 @@ Güleser, İlker, Elis ve Lila için krem ve zeytin tonlarında kişisel Android
 
 Bu depo Kitaplığım uygulamasının kaynak kodunu içerir. GitHub'a yükleme adımları `GITHUB.md`, derleme ayrıntıları `GELISTIRME.md` dosyasındadır. İmza anahtarları ve parolalar pakete dahil edilmemiştir. Java 17 ve Android SDK 35 ile Android Studio'da açılabilir; imza anahtarı olmadan debug APK derlenebilir.
 
+## 1.5.0 — Yıllık okuma listesi ve telefon bildirimi
+
+- **Hedefler → Okuma planım**: yılı seç, örneğin **2027**, ve okumak istediğin kitapları bir listede biriktir. Seçim ilk açılışta gelecek yıldır; son seçtiğin yıl hatırlanır.
+- **Listeme kitap ekle** ile Okuyacaklarım / Ara verdiklerim rafından seçebilir, yeni kitap arayabilir veya elle ekleyebilirsin. Yeni kitabın plan yılı otomatik doldurulur. Bir kitabın tek plan yılı vardır; başka yıla atanırsa yeni plana taşınır.
+- Okumaya başladığın ve bitirdiğin kitap listede durumuyla kalır. Listeden çıkarma kitabı rafından veya notlarını silmez. Listeler seçili aile profiline aittir. Okuyacaklarım rafındaki yıl filtresi de korunur.
+- Plan yılı bu telefondaki kitap kaydında ve JSON dışa aktarmada saklanır. Notion yenilemesi bu alanı silmez; plan yılı şu anda cihazlar arasında Notion ile eşitlenmez. Yıllık biten kitap sayısı ve günlük zincir mevcut hesaplarıyla devam eder.
+- **Hedefler → Okuma hatırlatması → Aç**: varsayılan saat **23:00**. Android bildirim iznini onayla; saati değiştirebilir, kapatabilir veya deneme bildirimi gönderebilirsin. Bildirim Kitaplığım'dan gelir; ChatGPT, PC veya internet bağlantısı gerekmez. Bildirime dokunmak uygulamayı açar.
+- Telefon yeniden başlatıldığında, uygulama güncellendiğinde veya saat dilimi değiştiğinde hatırlatma yeniden planlanır. Saat telefonun yerel saatidir. Android pil/arka plan kısıtları bildirimi geciktirebilir; uygulamayı zorla durdurmak bildirimleri uygulama tekrar açılana kadar durdurabilir.
+- `versionName 1.5.0`, `versionCode 8`. Aynı kişisel imzayla uygulamayı kaldırmadan güncellenir.
+
 ## 1.4.1 — Kitap arama ve danışman doğrulaması
 
 - Kitap araması artık Trendyol'un kitap kategorisindeki açık ürün kartlarını da diğer kataloglarla paralel tarar. Yazar/ISBN/kesin sayfa sayısı ilanda yoksa boş bırakılır; kayıt öncesi kontrol edilir. Bir kaynağın kesintisi diğer sonuçları engellemez.
